@@ -10,6 +10,7 @@ public class Main {
         ServerManager serverManager = new ServerManager(startingPort, numServers);
         serverManager.startAllServers();
         serverManager.printAllStoredCommands();
+        System.out.println("-----------------------------");
 
         CommandSender commandSender = new CommandSender(serverManager);
         ClientManager clientManager = new ClientManager(numClients, commandSender);
