@@ -8,16 +8,17 @@ public class Server implements Runnable {
     private boolean running;
     private String name;
     private ServerSocket serverSocket;
-    private int commandCount; // Track the number of commands received
-    private List<String> commandsReceived; // Store the received commands
+    private int commandCount;
+    private List<String> commandsReceived;
+    private List<String> commandsStored;
 
-    // Constructor to initialize the server
     public Server(String name, int port) {
         this.name = name;
         this.port = port;
         this.running = false;
         this.commandCount = 0;
-        this.commandsReceived = new ArrayList<>(); // Initialize the command list
+        this.commandsReceived = new ArrayList<>();
+        this.commandsStored = new ArrayList<>();
     }
 
     public String getName() {
@@ -25,14 +26,17 @@ public class Server implements Runnable {
     }
 
     public List<String> getCommandsReceived() {
-        return new ArrayList<>(commandsReceived); // Return a copy to avoid external modification
+        return new ArrayList<>(commandsReceived);
+    }
+
+    public List<String> getCommandsStored() {
+        return new ArrayList<>(commandsStored);
     }
 
     public void setCommandsReceived(List<String> commands) {
-        this.commandsReceived = new ArrayList<>(commands); // Set a copy of the list
+        this.commandsReceived = new ArrayList<>(commands);
     }
 
-    // Method to start the server
     public void start() throws IOException {
         serverSocket = new ServerSocket(port);
         running = true;
@@ -40,7 +44,6 @@ public class Server implements Runnable {
         new Thread(this).start();
     }
 
-    // Method to stop the server
     public void stop() throws IOException {
         running = false;
         if (serverSocket != null && !serverSocket.isClosed()) {
@@ -49,7 +52,6 @@ public class Server implements Runnable {
         System.out.println(name + " stopped.");
     }
 
-    // Method to print the server's status (name, port, running state, command count, commands received)
     public void printStatus() {
         System.out.println("Server: " + name);
         System.out.println("Port: " + port);
@@ -67,7 +69,6 @@ public class Server implements Runnable {
         System.out.println("-----------------------------");
     }
 
-    // Method to listen for commands
     @Override
     public void run() {
         while (running) {
@@ -77,14 +78,10 @@ public class Server implements Runnable {
 
                 String command = in.readLine();
                 if (command != null) {
-                    commandCount++; // Increment the command count when a command is received
-                    commandsReceived.add(command); // Add the command to the list
-                    System.out.println(name + " received command: " + command);
-                    if ("STOP".equalsIgnoreCase(command)) {
-                        stop();
-                    } else {
-                        out.println("Command received: " + command);
-                    }
+                    commandsStored.add(command);
+                    commandCount++;
+                    commandsReceived.add(command);
+                    out.println("Server " + name + " received: " + command);
                 }
             } catch (IOException e) {
                 if (running) {
@@ -94,11 +91,7 @@ public class Server implements Runnable {
         }
     }
 
-
-    // Add a new command if it doesn't already exist
-    /*public void addCommand(String command) {
-        if (!commandsReceived.contains(command)) {
-            commandsReceived.add(command);
-        }
-    }*/
+    public int getPort() {
+        return port;
+    }
 }

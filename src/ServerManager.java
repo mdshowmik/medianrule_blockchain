@@ -1,56 +1,51 @@
 import java.io.IOException;
+import java.util.List;
 
 public class ServerManager {
-    private Server[] servers = new Server[40];  // Change from 5 to 15 servers
+    private Server[] servers;
 
-    public ServerManager() {
-        // Initialize the 15 servers with different ports
-        for (int i = 0; i < 40; i++) {
-            servers[i] = new Server("Server" + (i + 1), 5000 + i);
+    public ServerManager(int startingPort, int numServers) {
+        this.servers = new Server[numServers];
+
+        // Initialize servers with dynamic ports
+        for (int i = 0; i < numServers; i++) {
+            servers[i] = new Server("Server" + (i + 1), startingPort + i);
         }
     }
 
-
     public Server[] getServers() {
-        return servers; // Return the array of servers
+        return servers;
     }
 
-    // Start all servers
     public void startAllServers() throws IOException {
         for (Server server : servers) {
             server.start();
         }
+        System.out.println(" ");
     }
 
-    // Stop all servers
     public void stopAllServers() throws IOException {
+        //System.out.println(" ");
         for (Server server : servers) {
             server.stop();
         }
     }
 
-    // Start a specific server by index
-    public void startServer(int index) throws IOException {
-        if (index >= 0 && index < servers.length) {
-            servers[index].start();
-        } else {
-            System.out.println("Invalid server index.");
-        }
-    }
-
-    // Stop a specific server by index
-    public void stopServer(int index) throws IOException {
-        if (index >= 0 && index < servers.length) {
-            servers[index].stop();
-        } else {
-            System.out.println("Invalid server index.");
-        }
-    }
-
-    // Method to print data of all servers
     public void printAllServersData() {
+        System.out.println(" ");
         for (Server server : servers) {
-            server.printStatus(); // Calls the printStatus() method of each server
+            server.printStatus();
         }
     }
+
+    public void printAllStoredCommands() {
+        System.out.println(" ");
+        for (Server server : servers) {
+            System.out.print(server.getName() + ": ");
+            List<String> commands = server.getCommandsStored();
+            System.out.println(String.join(", ", commands));
+        }
+        System.out.println(" ");
+    }
+
 }
