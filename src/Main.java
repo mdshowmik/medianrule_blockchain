@@ -14,7 +14,7 @@ public class Main {
         ClientManager clientManager = new ClientManager(numClients, serverManager);
         clientManager.startClients(numCommandsPerClient);
 
-        Thread.sleep(1000); // Wait for some time to let all clients finish
+        Thread.sleep(1000);
 
         serverManager.printAllStoredCommands();
         serverManager.printAllServersData();
