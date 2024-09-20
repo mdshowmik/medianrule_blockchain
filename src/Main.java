@@ -2,22 +2,21 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException, IOException {
-        int startingPort = 6000;
-        int numServers = 5;
-        int numClients = 2;
-        int commandsPerClient = 5;
+        int startingPort = 5000;
+        int numServers = 10;
+        int numClients = 5;
+        int numCommandsPerClient = 5;
 
         ServerManager serverManager = new ServerManager(startingPort, numServers);
         serverManager.startAllServers();
-        serverManager.printAllStoredCommands();
-        System.out.println("-----------------------------");
 
-        CommandSender commandSender = new CommandSender(serverManager);
-        ClientManager clientManager = new ClientManager(numClients, commandSender);
-        clientManager.sendCommandsFromClients(commandsPerClient);
+        ClientManager clientManager = new ClientManager(numClients, serverManager);
+        clientManager.startClients(numCommandsPerClient);
 
-        //serverManager.printAllServersData();
+        Thread.sleep(1000); // Wait for some time to let all clients finish
+
         serverManager.printAllStoredCommands();
+        serverManager.printAllServersData();
         serverManager.stopAllServers();
     }
 }
