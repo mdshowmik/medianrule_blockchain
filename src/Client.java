@@ -16,13 +16,19 @@ public class Client {
     }
 
     public void sendCommand(String command) {
+
         String formattedCommand = "Client" + clientId + "_" + command;
         Server server = serverManager.getRandomServer();
+
+        if (server == null) {
+            System.out.println("No available server to send the command.");
+            return;
+        }
 
         while (server.isBusy()) {
             System.out.println(server.getName() + " is currently busy. Client" + clientId + " is waiting to send the command.");
             try {
-                Thread.sleep(100);
+                Thread.sleep(100); // Small wait before checking again
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -34,6 +40,7 @@ public class Client {
 
             System.out.println("Client " + clientId + " sends " + formattedCommand + " to " + server.getName());
             out.println(formattedCommand);
+
             String response = in.readLine();
             System.out.println("Client " + clientId + " receives response from " + server.getName() + ": " + response + " received");
 

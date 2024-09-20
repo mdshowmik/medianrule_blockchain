@@ -1,21 +1,34 @@
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ServerManager {
-    private Server[] servers;
-    private Random random;
+    //private Server[] servers;
+    private List<Server> servers;
 
-    public ServerManager(int startingPort, int numServers) {
-        this.servers = new Server[numServers];
-        this.random = new Random();
-
-        for (int i = 0; i < numServers; i++) {
-            servers[i] = new Server("Server " + (i + 1), startingPort + i);
+    public ServerManager(int numberOfServers, int startingPort) {
+        servers = new ArrayList<>();
+        for (int i = 0; i < numberOfServers; i++) {
+            int port = startingPort + new Random().nextInt(1000);  // Random port offset within a range
+            try {
+                Server server = new Server("Server" + (i + 1), port);
+                servers.add(server);
+                new Thread(server).start();  // Start the server thread
+            } catch (IOException e) {
+                System.err.println("Failed to start Server" + (i + 1) + ": " + e.getMessage());
+            }
         }
     }
 
     public Server getRandomServer() {
-        return servers[random.nextInt(servers.length)];
+        Random random = new Random();
+        if (!servers.isEmpty()) {
+            return servers.get(random.nextInt(servers.size()));
+        } else {
+            System.out.println("No servers available.");
+            return null;
+        }
     }
 
     public void startAllServers() throws IOException {

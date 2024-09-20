@@ -14,7 +14,7 @@ public class Server implements Runnable {
     private boolean busy;
 
 
-    public Server(String name, int port) {
+    public Server(String name, int port) throws IOException {
         this.name = name;
         this.port = port;
         this.running = false;
@@ -22,6 +22,25 @@ public class Server implements Runnable {
         this.commandsReceived = new ArrayList<>();
         this.commandsStored = new ArrayList<>();
         this.busy = false;
+        bindToPort(port);
+    }
+
+    private void bindToPort(int port) throws IOException {
+        int maxRetries = 10;  // Maximum number of retries to find an available port
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                this.serverSocket = new ServerSocket(port);
+                //System.out.println(name + " started on port " + port);
+                this.port = port;  // Save the port in case it was changed
+                break;
+            } catch (IOException e) {
+                System.out.println("Port " + port + " is unavailable. Trying next port...");
+                port++;  // Try the next port
+            }
+        }
+        if (this.serverSocket == null) {
+            throw new IOException("Failed to bind to a port after " + maxRetries + " attempts.");
+        }
     }
 
     public String getName() {
@@ -41,7 +60,7 @@ public class Server implements Runnable {
     }
 
     public void start() throws IOException {
-        serverSocket = new ServerSocket(port);
+        //bindToPort(port);
         running = true;
         System.out.println(name + " started on port " + port);
         new Thread(this).start();
