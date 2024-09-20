@@ -1,29 +1,44 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 public class Client {
     private int clientId;
     private String serverAddress;
+    private ServerManager serverManager;
 
-    public Client(int clientId, String serverAddress) {
+    public Client(int clientId, String serverAddress, ServerManager serverManager) {
         this.clientId = clientId;
         this.serverAddress = serverAddress;
+        this.serverManager = serverManager;
     }
 
-    public void sendCommand(String command, int serverNumber, int serverPort) {
-        try (Socket socket = new Socket(serverAddress, serverPort);
+    public void sendCommand(String command) {
+        String formattedCommand = "Client" + clientId + "_" + command;
+        Server server = serverManager.getRandomServer();
+
+        while (server.isBusy()) {
+            System.out.println(server.getName() + " is currently busy. Client" + clientId + " is waiting to send the command.");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        try (Socket socket = new Socket(serverAddress, server.getPort());
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            System.out.println("Client" + clientId + " sends " + command + " to Server" + serverNumber);
-            out.println(command);
-
+            System.out.println("Client " + clientId + " sends " + formattedCommand + " to " + server.getName());
+            out.println(formattedCommand);
             String response = in.readLine();
-            System.out.println("Server" + serverNumber + " received: " + command);
-            System.out.println("Client" + clientId + " receives response from Server" + serverNumber);
+            System.out.println("Client " + clientId + " receives response from " + server.getName() + ": " + response + " received");
 
         } catch (IOException e) {
-            System.out.println("Failed to connect to Server" + serverNumber + ": " + e.getMessage());
+            System.out.println("Client " + clientId + " failed to connect to " + server.getName() + ": " + e.getMessage());
         }
     }
 }

@@ -11,6 +11,8 @@ public class Server implements Runnable {
     private int commandCount;
     private List<String> commandsReceived;
     private List<String> commandsStored;
+    private boolean busy;
+
 
     public Server(String name, int port) {
         this.name = name;
@@ -19,6 +21,7 @@ public class Server implements Runnable {
         this.commandCount = 0;
         this.commandsReceived = new ArrayList<>();
         this.commandsStored = new ArrayList<>();
+        this.busy = false;
     }
 
     public String getName() {
@@ -76,17 +79,20 @@ public class Server implements Runnable {
                  BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
+                busy = true;  // Mark server as busy
                 String command = in.readLine();
                 if (command != null) {
                     commandsStored.add(command);
                     commandCount++;
                     commandsReceived.add(command);
-                    out.println("Server " + name + " received: " + command);
+                    out.println(command);
                 }
+                busy = false;
             } catch (IOException e) {
                 if (running) {
                     System.err.println("Error in " + name + ": " + e.getMessage());
                 }
+                busy = false;
             }
         }
     }
@@ -94,4 +100,10 @@ public class Server implements Runnable {
     public int getPort() {
         return port;
     }
+
+    public boolean isBusy() {
+        return busy;
+    }
+
 }
+

@@ -1,25 +1,30 @@
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class ClientManager {
+    private Client[] clients;
     private int numClients;
-    private CommandSender commandSender;
-    private static int globalCommandCounter = 1;
+    private ServerManager serverManager;
 
-    public ClientManager(int numClients, CommandSender commandSender) {
+    public ClientManager(int numClients, ServerManager serverManager) {
         this.numClients = numClients;
-        this.commandSender = commandSender;
-    }
-
-    public void sendCommandsFromClients(int commandsPerClient) {
-        for (int i = 1; i <= numClients; i++) {
-            Client client = new Client(i, "localhost");
-            for (int j = 0; j < commandsPerClient; j++) {
-                int commandNumber = getNextCommandNumber();
-                String command = "Command " + commandNumber;
-                commandSender.sendCommand(client, command);
-            }
+        this.serverManager = serverManager;
+        clients = new Client[numClients];
+        for (int i = 0; i < numClients; i++) {
+            clients[i] = new Client(i + 1, "localhost", serverManager);
         }
     }
 
-    private synchronized int getNextCommandNumber() {
-        return globalCommandCounter++;
+    public void startClients(int numCommandsPerClient) {
+        ExecutorService executor = Executors.newFixedThreadPool(numClients);
+        for (int i = 0; i < numClients; i++) {
+            int clientId = i + 1;
+            executor.submit(() -> {
+                for (int j = 0; j < numCommandsPerClient; j++) {
+                    clients[clientId - 1].sendCommand("Command" + (j + 1));
+                }
+            });
+        }
+        executor.shutdown();
     }
 }
