@@ -12,6 +12,7 @@ public class Server implements Runnable {
     private List<String> commandsReceived;
     private List<String> commandsStored;
     private boolean busy;
+    private boolean consensus;
 
 
     public Server(String name, int port) throws IOException {
@@ -23,6 +24,7 @@ public class Server implements Runnable {
         this.commandsStored = new ArrayList<>();
         this.busy = false;
         bindToPort(port);
+        this.consensus = false;
     }
 
     private void bindToPort(int port) throws IOException {
@@ -41,6 +43,14 @@ public class Server implements Runnable {
         if (this.serverSocket == null) {
             throw new IOException("Failed to bind to a port after " + maxRetries + " attempts.");
         }
+    }
+
+    public boolean isInConsensus() {
+        return consensus;
+    }
+
+    public void setConsensus(boolean consensus) {
+        this.consensus = consensus;
     }
 
     public String getName() {

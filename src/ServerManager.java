@@ -31,6 +31,10 @@ public class ServerManager {
         }
     }
 
+    public List<Server> getServers() {
+        return servers;
+    }
+
     public void startAllServers() throws IOException {
         for (Server server : servers) {
             server.start();
@@ -57,6 +61,26 @@ public class ServerManager {
         for (Server server : servers) {
             server.printStatus();
         }
+    }
+
+    public boolean serversEmpty(){
+        for (Server server : servers) {
+            if (!server.getCommandsStored().isEmpty()) {
+                return false;  // If any server has stored commands, return false
+            }
+        }
+        return true;  // All servers are empty
+    }
+
+    // Method to check if all servers are in SMR mode
+    public boolean areAllServersInConsensus() {
+        List<String> firstServerCommands = servers.get(0).getCommandsStored();
+        for (Server server : servers) {
+            if (!server.getCommandsStored().equals(firstServerCommands)) {
+                return false;
+            }
+        }
+        return true;  // Return true if all servers are in SMR mode
     }
 }
 
