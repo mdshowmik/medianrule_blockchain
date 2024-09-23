@@ -3,9 +3,9 @@ import java.net.ServerSocket;
 //median rule basic
 public class Main {
     public static void main(String[] args) throws InterruptedException, IOException {
-        int numServers = 10;
+        int numServers = 7;
         int numClients = 2;
-        int numCommandsPerClient = 1;
+        int numCommandsPerClient = 3;
         int port = 5000;
 
         ServerManager serverManager = new ServerManager(numServers, port);
@@ -31,3 +31,5 @@ public class Main {
         serverManager.stopAllServers();
     }
 }
+
+

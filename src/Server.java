@@ -154,13 +154,13 @@ public class Server implements Runnable {
 
     // Method to send requests to a specified number of other servers
     public List<String> sendRequestToServers(List<Server> allServers, int numRequests) {
-        List<String> responses = new ArrayList<>();
+        List<String> flattenedResponses = new ArrayList<>();  // Store all commands in a single list
         Set<Server> contactedServers = new HashSet<>();
         Random random = new Random();
 
         // Use ExecutorService to manage parallel tasks
         ExecutorService executor = Executors.newFixedThreadPool(numRequests);
-        List<CompletableFuture<String>> futures = new ArrayList<>();
+        List<CompletableFuture<List<String>>> futures = new ArrayList<>();
 
         while (contactedServers.size() < numRequests && contactedServers.size() < allServers.size() - 1) {
             // Filter available servers that are ready and haven't been contacted
@@ -179,7 +179,7 @@ public class Server implements Runnable {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt(); // Restore the interrupted status
                     System.out.println(this.name + " was interrupted while waiting.");
-                    return responses; // Exit if interrupted
+                    return flattenedResponses; // Exit if interrupted
                 }
 
                 // Recheck available servers after waiting
@@ -196,13 +196,16 @@ public class Server implements Runnable {
             contactedServers.add(targetServer);
 
             // Launch a parallel task for each request
-            CompletableFuture<String> futureResponse = CompletableFuture.supplyAsync(() -> {
+            CompletableFuture<List<String>> futureResponse = CompletableFuture.supplyAsync(() -> {
                 synchronized (targetServer) {  // Ensure thread safety
                     targetServer.setReady(false);  // Set to false when processing starts
-                    String response = targetServer.receiveRequest(this.name);
+                    List<String> commands = targetServer.getCommandsStored(); // Get the list of commands from the target server
                     targetServer.setReady(true);   // Set to true when processing ends
-                    System.out.println(this.name + " sent a request to " + targetServer.getName());
-                    return response;
+                    if (commands.isEmpty()) {
+                        commands.add("");  // Add an empty string if the server has no commands
+                    }
+                    System.out.println(this.name + " sent a request to " + targetServer.getName() + " and received commands: " + commands);
+                    return commands;  // Return the list of commands as the response
                 }
             }, executor);
 
@@ -210,9 +213,10 @@ public class Server implements Runnable {
         }
 
         // Collecting all responses asynchronously
-        for (CompletableFuture<String> future : futures) {
+        for (CompletableFuture<List<String>> future : futures) {
             try {
-                responses.add(future.get()); // Ensures type safety by getting String responses
+                List<String> commandList = future.get();
+                flattenedResponses.addAll(commandList); // Flatten the responses into a single list
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
@@ -220,17 +224,44 @@ public class Server implements Runnable {
 
         executor.shutdown(); // Properly shut down the executor service
 
-        // Print all 6 responses
-        //System.out.println("All responses received by " + this.name + ": " + responses);
+        // Print all responses
+        //System.out.println("All commands received by " + this.name + ": " + flattenedResponses);
 
         // Keep the first 3 responses and discard the last 3
-        List<String> keptResponses = responses.subList(0, Math.min(3, responses.size()));
+        List<String> keptResponses = flattenedResponses.subList(0, Math.min(3, flattenedResponses.size()));
 
         // Print the kept responses
-        System.out.println("First 3 responses kept by " + this.name + ": " + keptResponses);
+        System.out.println("First 3 commands kept by " + this.name + ": " + keptResponses);
+
+        String medianCommand = keptResponses.get(1);
+        System.out.println("Median Command " + this.name + ": " + medianCommand);
+
+        // Add the median command to the server's list of stored commands
+        List<String> currentCommands = this.getCommandsStored();
+        currentCommands.add(medianCommand);
+
+        // Assuming commandsStored is a field that you can directly modify
+        this.commandsStored = currentCommands;
+
+        // Print the updated list of commands stored in the server
+        System.out.println(this.name + "'s stored commands after adding median: " + this.getCommandsStored());
 
         return keptResponses;  // Return only the first 3 responses
     }
+
+
+
+
+
+    // In the Server class
+    public String provideData(String request) {
+        // Generate some data in response to the request
+        String responseData = "Data from " + this.name + ": " + Math.random();
+        // Here, the data could be anything that the server is supposed to provide.
+        // The response could include computed values, stored data, etc.
+        return responseData;
+    }
+
 
 
     // Method to receive a request and generate a response
