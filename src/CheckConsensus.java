@@ -1,9 +1,12 @@
 public class CheckConsensus {
 
     private ServerManager serverManager;
+    private ApplyConsensus applyConsensus;
 
     public CheckConsensus(ServerManager serverManager) {
         this.serverManager = serverManager;
+        //this.applyConsensus = applyConsensus;
+        this.applyConsensus = new ApplyConsensus(serverManager);
     }
     // Method to check if all servers are in consensus mode
     public boolean areAllServersInConsensus() {
@@ -26,6 +29,7 @@ public class CheckConsensus {
             //System.out.println("All servers are empty.");
             boolean allInSMRMode = areAllServersInConsensus();
             System.out.println("Are all servers in Consensus? " + allInSMRMode);
+            applyConsensus.checkAndInitiateConsensus();
         }
     }
 }
