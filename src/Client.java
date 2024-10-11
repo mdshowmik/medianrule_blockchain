@@ -28,7 +28,7 @@ public class Client {
         while (server.isBusy()) {
             System.out.println(server.getName() + " is currently busy. Client" + clientId + " is waiting to send the command.");
             try {
-                Thread.sleep(100); // Small wait before checking again
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
