@@ -15,8 +15,8 @@ public class Client {
         this.serverManager = serverManager;
     }
 
+    //send command to servers
     public void sendCommand(String command) {
-
         String formattedCommand = "Client" + clientId + "_" + command;
         Server server = serverManager.getRandomServer();
 
@@ -42,7 +42,7 @@ public class Client {
             out.println(formattedCommand);
 
             String response = in.readLine();
-            System.out.println("Client " + clientId + " receives response from " + server.getName() + ": " + response + " received");
+            System.out.println("Client " + clientId + " receives response from " + server.getName() + ": " + response);
 
         } catch (IOException e) {
             System.out.println("Client " + clientId + " failed to connect to " + server.getName() + ": " + e.getMessage());

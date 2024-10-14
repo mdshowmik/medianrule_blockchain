@@ -55,23 +55,14 @@ public class ServerManager {
         System.out.println(" ");
     }
 
-    public void printAllServersData() {
+    /*public void printAllServersData() {
         System.out.println(" ");
         for (Server server : servers) {
             server.printStatus();
         }
-    }
+    }*/
 
-    public boolean serversEmpty(){
-        for (Server server : servers) {
-            if (!server.getCommandsStored().isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-   /* public boolean areAllServersInConsensus() {
+   /*public boolean areAllServersInConsensus() {
         List<String> firstServerCommands = servers.get(0).getCommandsStored();
         for (Server server : servers) {
             if (!server.getCommandsStored().equals(firstServerCommands)) {

@@ -15,6 +15,7 @@ public class ClientManager {
         }
     }
 
+    //runs parallel clients
     public void startClients(int numCommandsPerClient) {
         ExecutorService executor = Executors.newFixedThreadPool(numClients);
         for (int i = 0; i < numClients; i++) {

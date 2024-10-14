@@ -36,6 +36,7 @@ public class Server implements Runnable {
         this.isready = true;
     }
 
+    //assigns port
     private void bindToPort(int port) throws IOException {
         int maxRetries = 10;
         for (int i = 0; i < maxRetries; i++) {
@@ -54,36 +55,17 @@ public class Server implements Runnable {
         }
     }
 
-    public boolean isInConsensus() {
-        return consensus;
-    }
-
-    public void setConsensus(boolean consensus) {
-        this.consensus = consensus;
-    }
-
     public String getName() {
         return name;
     }
 
-    public boolean isReady() {
-        return isready;
-    }
-
-    public void setReady(boolean isready) {
-        this.isready = isready;
-    }
-
-    public List<String> getCommandsReceived() {
+    /*public List<String> getCommandsReceived() {
         return new ArrayList<>(commandsReceived);
-    }
+    }*/
 
+    //returns servers`s data
     public List<String> getCommandsStored() {
         return new ArrayList<>(commandsStored);
-    }
-
-    public void setCommandsReceived(List<String> commands) {
-        this.commandsReceived = new ArrayList<>(commands);
     }
 
     public void start() throws IOException {
@@ -117,7 +99,7 @@ public class Server implements Runnable {
         System.out.println("-----------------------------");
     }
 
-    @Override
+    /*@Override
     public void run() {
         while (running) {
             try (Socket clientSocket = serverSocket.accept();
@@ -140,6 +122,53 @@ public class Server implements Runnable {
                 busy = false;
             }
         }
+    }*/
+
+    //handles requests-responses of servers
+    @Override
+    public void run() {
+        while (running) {
+            try (Socket clientSocket = serverSocket.accept();
+                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+
+                busy = true;
+
+                String command = in.readLine();
+
+                if (command != null) {
+
+                    if (command.startsWith("Request")) {
+                        String response = processRequest(command);
+                        out.println(response);  // Send the server's data back to the requester
+
+                        if(!response.isEmpty()){
+                            System.out.println(name + " sent response: " + response);
+                        }
+                        else{
+                            System.out.println(name + " sent response: No Data");
+                        }
+
+                    } else {
+                        System.out.println(name + " received: " + command);
+                        commandsStored.add(command);
+                        commandCount++;
+                        commandsReceived.add(command);
+
+                        out.println(command + " Received");
+                        System.out.println(name + " stored command: " + command);
+                    }
+                }
+
+                busy = false;
+
+            } catch (IOException e) {
+                if (running) {
+                    System.err.println("Error in " + name + ": " + e.getMessage());
+                }
+                busy = false;
+            }
+        }
     }
 
     public int getPort() {
@@ -149,18 +178,6 @@ public class Server implements Runnable {
     public boolean isBusy() {
         return busy;
     }
-
-
-    public void updateData(String newData) {
-        if (newData != null && !commandsStored.contains(newData)) {
-            commandsStored.add(newData);
-        }
-    }
-
-    public String requestDataFromServer(Server otherServer) {
-        return otherServer.getData();
-    }
-
     public String getData() {
         if (!commandsStored.isEmpty()) {
             return commandsStored.get(commandsStored.size() - 1);
@@ -168,12 +185,14 @@ public class Server implements Runnable {
         return null;
     }
 
+    //return stored data
     public String processRequest(String requestData) {
         System.out.println(name + " received a request: " + requestData);
         return String.join(", ", commandsStored);
     }
 
 
+    //add returned data from other servers
     public void addCommand(String command) {
         if(command != null){
             String[] commandFromServer = command.split(",");
