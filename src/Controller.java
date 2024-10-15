@@ -15,8 +15,10 @@ public class Controller {
         serverManager = new ServerManager(numServers, port);
         serverManager.startAllServers();
 
-        clientManager = new ClientManager(numClients, serverManager);
-        clientManager.startClients(numCommandsPerClient);
+        serverManager.assignRandomDataToServers();
+
+        //clientManager = new ClientManager(numClients, serverManager);
+        //clientManager.startClients(numCommandsPerClient);
 
         Thread.sleep(1000);
 
