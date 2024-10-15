@@ -1,5 +1,8 @@
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 public class ServerManager {
     //private Server[] servers;
@@ -71,5 +74,36 @@ public class ServerManager {
         }
         return true;
     }*/
+   /*public void assignRandomDataToOneServer() {
+
+       for (Server server : servers) {
+           Server randomServer = servers.get(new Random().nextInt(servers.size()));
+           int randomNumber = new Random().nextInt(10); // Generate a random number between 0 and 99
+           randomServer.getCommandsStored().add(String.valueOf(randomNumber)); // Assign it to the randomly selected server
+           System.out.println("Random data assigned to " + randomServer.getName() + ": " + randomNumber);
+       }
+   }*/
+
+    public void assignRandomDataToServers() {
+        Random random = new Random();
+        int numberOfServers = servers.size();
+        int serversToInitialize = (int) Math.ceil(numberOfServers * 0.8); // Calculate 80% of the servers, rounding up if necessary.
+
+        // Create a list of server indices and shuffle it.
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < numberOfServers; i++) {
+            indices.add(i);
+        }
+        Collections.shuffle(indices, random);
+
+        // Select the first 80% of the shuffled index list to assign data.
+        for (int i = 0; i < serversToInitialize; i++) {
+            Server server = servers.get(indices.get(i));
+            int randomNumber = random.nextInt(10); // Generate a random number between 0 and 9
+            String randomNumberAsString = String.valueOf(randomNumber);
+            server.addCommand(randomNumberAsString); // Assuming addCommand method handles the data correctly
+        }
+    }
+
 }
 

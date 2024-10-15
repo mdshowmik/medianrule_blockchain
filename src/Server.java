@@ -143,20 +143,20 @@ public class Server implements Runnable {
                         out.println(response);  // Send the server's data back to the requester
 
                         if(!response.isEmpty()){
-                            System.out.println(name + " sent response: " + response);
+                            //System.out.println(name + " sent response: " + response);
                         }
                         else{
-                            System.out.println(name + " sent response: No Data");
+                            //System.out.println(name + " sent response: ⊥");
                         }
 
                     } else {
-                        System.out.println(name + " received: " + command);
+                        //System.out.println(name + " received: " + command);
                         commandsStored.add(command);
                         commandCount++;
                         commandsReceived.add(command);
 
                         out.println(command + " Received");
-                        System.out.println(name + " stored command: " + command);
+                        //System.out.println(name + " stored command: " + command);
                     }
                 }
 
@@ -187,13 +187,13 @@ public class Server implements Runnable {
 
     //return stored data
     public String processRequest(String requestData) {
-        System.out.println(name + " received a request: " + requestData);
+        //System.out.println(name + " received a request: " + requestData);
         return String.join(", ", commandsStored);
     }
 
 
     //add returned data from other servers
-    public void addCommand(String command) {
+    /*public void addCommand(String command) {
         if(command != null){
             String[] commandFromServer = command.split(",");
 
@@ -206,7 +206,14 @@ public class Server implements Runnable {
                 }
             }
         }
+    }*/
+
+    public void addCommand(String command) {
+        commandsStored.clear();  // Clear all previous commands
+        commandsStored.add(command);  // Add the new command
+        //System.out.println(name + " added command: " + command);
     }
+
 
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
@@ -215,5 +222,6 @@ public class Server implements Runnable {
     public boolean isBlocked() {
         return blocked;
     }
+
 }
 
