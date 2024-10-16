@@ -116,6 +116,7 @@ public class ConsensusManager {
 
                     if(selectedResponses.size() < 3) {
                         System.out.println("Not enough responses available");
+                        sourceServer.setNull();
                     }
                     else{
                         String medianResponse = computeMedianResponse(selectedResponses);

@@ -214,6 +214,12 @@ public class Server implements Runnable {
         //System.out.println(name + " added command: " + command);
     }
 
+    public void setNull() {
+        commandsStored.clear();  // Clear all previous commands
+        //commandsStored.add(command);  // Add the new command
+        //System.out.println(name + " added command: " + command);
+    }
+
 
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
