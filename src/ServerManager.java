@@ -87,7 +87,7 @@ public class ServerManager {
     public void assignRandomDataToServers() {
         Random random = new Random();
         int numberOfServers = servers.size();
-        int serversToInitialize = (int) Math.ceil(numberOfServers * 0.8); // Calculate 80% of the servers, rounding up if necessary.
+        int serversToInitialize = (int) Math.ceil(numberOfServers * 0.80); // Calculate 80% of the servers, rounding up if necessary.
 
         // Create a list of server indices and shuffle it.
         List<Integer> indices = new ArrayList<>();

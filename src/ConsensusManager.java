@@ -88,7 +88,9 @@ public class ConsensusManager {
 
             for (Server sourceServer : serverManager.getServers()) {
                 if (sourceServer.isBlocked()) {
-                    System.out.println(sourceServer.getName() + " is blocked and cannot send requests this round.");
+                    System.out.println(sourceServer.getName() + " is blocked and cannot receive any key in this round.");
+                    System.out.println(sourceServer.getName() + " set to ⊥");
+                    //sourceServer.setNull();
                     continue;
                 }
 
@@ -185,14 +187,14 @@ public class ConsensusManager {
                 System.out.println(" ");
                 if (commands.isEmpty() || !commands.equals(referenceCommand)) {
                     roundForConsensus++;
-                    //serverManager.printAllStoredCommands();
+                    serverManager.printAllStoredCommands();
                     return false;
 
                 }
             }
         }
         System.out.println("Consensus Reached in "+ roundForConsensus + " round");
-        //serverManager.printAllStoredCommands();
+        serverManager.printAllStoredCommands();
         return true;
     }
 }

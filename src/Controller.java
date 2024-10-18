@@ -7,7 +7,7 @@ public class Controller {
     private ConsensusManager consensusManager;
 
     public void startApplication() throws InterruptedException, IOException {
-        int numServers = 100;
+        int numServers = 20;
         int numClients = 5;
         int numCommandsPerClient = 20;
         int port = 5000;
