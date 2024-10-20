@@ -191,7 +191,6 @@ public class Server implements Runnable {
         return String.join(", ", commandsStored);
     }
 
-
     //add returned data from other servers
     /*public void addCommand(String command) {
         if(command != null){
