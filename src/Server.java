@@ -21,7 +21,6 @@ public class Server implements Runnable {
     private boolean isready;
     private boolean blocked = false;
     private CopyOnWriteArrayList<String> commandsStored = new CopyOnWriteArrayList<>();
-    private List<Server> servers;
 
 
     public Server(String name, int port) throws IOException {
@@ -35,7 +34,6 @@ public class Server implements Runnable {
         bindToPort(port);
         this.consensus = false;
         this.isready = true;
-        this.servers = new ArrayList<>();
     }
 
     //assigns port
