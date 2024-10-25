@@ -58,6 +58,29 @@ public class ServerManager {
         System.out.println(" ");
     }
 
+    // check command validity
+    public boolean checkValidity(String commandToCheck) {
+
+        List<String> allCommands = new ArrayList<>();
+        for (Server server : servers) {
+            allCommands.addAll(server.getCommandsStored());
+        }
+
+        String[] commandReceivedFromOtherServer = commandToCheck.split(",");
+
+        for (String breakingCommandList : commandReceivedFromOtherServer) {
+            breakingCommandList = breakingCommandList.replaceAll("\\s", "");
+
+            //System.out.println("checking " + breakingCommandList + " against " + allCommands);
+
+            if (allCommands.contains(breakingCommandList)) {
+                //System.out.println("yes");
+                return true;
+            }
+        }
+        return false;
+    }
+
     /*public void printAllServersData() {
         System.out.println(" ");
         for (Server server : servers) {

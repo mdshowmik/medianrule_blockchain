@@ -121,10 +121,18 @@ public class ConsensusManager {
                     else{
                         String medianResponse = computeMedianResponse(selectedResponses);
                         if (!medianResponse.isEmpty()) {
-                            System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
-                            sourceServer.addCommand(medianResponse);
-                        } else {
-                            System.out.println(sourceServer.getName() + " can`t accept ⊥");
+                            boolean validity = serverManager.checkValidity(medianResponse);
+                            //System.out.println(validity);
+                            if(validity == true){
+                                System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
+                                sourceServer.addCommand(medianResponse);
+                            }
+                            else{
+                                System.out.println(sourceServer.getName() + " can't accept median response: " + medianResponse + " as it seems suspicious");
+                            }
+                        }
+                        else {
+                            System.out.println(sourceServer.getName() + " can't accept ⊥");
                         }
                     }
 
