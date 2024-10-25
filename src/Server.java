@@ -139,7 +139,7 @@ public class Server implements Runnable {
                 if (command != null) {
 
                     if (command.startsWith("Request")) {
-                        String response = processRequest(command);
+                        String response = processRequest();
                         out.println(response);  // Send the server's data back to the requester
 
                         if(!response.isEmpty()){
@@ -186,13 +186,14 @@ public class Server implements Runnable {
     }
 
     //return stored data
-    public String processRequest(String requestData) {
+    public String processRequest() {
         //System.out.println(name + " received a request: " + requestData);
         return String.join(", ", commandsStored);
     }
 
     //add returned data from other servers
-    /*public void addCommand(String command) {
+    public void addCommand(String command) {
+        commandsStored.clear();  // Clear all previous commands
         if(command != null){
             String[] commandFromServer = command.split(",");
 
@@ -205,13 +206,13 @@ public class Server implements Runnable {
                 }
             }
         }
-    }*/
+    }
 
-    public void addCommand(String command) {
+    /*public void addCommand(String command) {
         commandsStored.clear();  // Clear all previous commands
         commandsStored.add(command);  // Add the new command
         //System.out.println(name + " added command: " + command);
-    }
+    }*/
 
     public void setNull() {
         commandsStored.clear();  // Clear all previous commands

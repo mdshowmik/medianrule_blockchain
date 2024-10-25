@@ -3,9 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -162,9 +160,45 @@ public class ConsensusManager {
 
 
     public String computeMedianResponse(List<String> responses) {
-        //Collections.sort(responses);
-        int medianIndex = responses.size() / 2;
-        return responses.get(medianIndex);
+        /*//Collections.sort(responses);
+        System.out.println("3 responses" + responses);
+        //int medianIndex = responses.size() / 2;
+
+        String firstResponse = responses.get(0);
+        String middleResponse = responses.get(1);
+        String lastResponse = responses.get(2);
+
+        System.out.println("separated respomses: "+firstResponse+middleResponse+lastResponse);
+
+        //String mergedString = responses.get(0) +"," + responses.get(1) + "," + responses.get(0);
+
+        String mergedString = String.join(",",responses);
+
+        List<String> merged = new ArrayList<>(Arrays.asList(mergedString.split(",")));
+
+        Set<String> uniqueData = new HashSet<>(merged);
+        uniqueData.remove("");
+        uniqueData.remove(null);
+
+        String finalMedianList = String.join(", ", uniqueData);
+
+        System.out.println("mergered responses: " + finalMedianList);
+        //List<String> resultList = new ArrayList<>(uniqueData);
+
+        //System.out.println("first to last"+firstResponse+middleResponse+lastResponse);
+
+        return finalMedianList;*/
+
+        Set<String> uniqueData = new HashSet<>(responses);
+        uniqueData.remove("");
+        uniqueData.remove(null);
+
+        String finalMedianList = String.join(", ", uniqueData);
+
+        //System.out.println("merged responses: " + finalMedianList);
+
+        return finalMedianList;
+
     }
 
     public boolean isConsensusReached() {
