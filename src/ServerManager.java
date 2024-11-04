@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class ServerManager {
-    //private Server[] servers;
     private List<Server> servers;
 
     public ServerManager(int numberOfServers, int startingPort) {
