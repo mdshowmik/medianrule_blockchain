@@ -17,8 +17,8 @@ public class Controller {
 
         //serverManager.assignRandomDataToServers();
 
-        clientManager = new ClientManager(numClients, serverManager);
-        clientManager.startClients(numCommandsPerClient);
+        //clientManager = new ClientManager(numClients, serverManager);
+        //clientManager.startClients(numCommandsPerClient);
 
         Thread.sleep(1000);
 
@@ -42,9 +42,9 @@ public class Controller {
     private ConsensusManager consensusManager;
 
     public void startApplication() throws InterruptedException, IOException {
-        int numServers = 50;
-        int numClients = 1;
-        int numCommandsPerClient = 100;
+        int numServers = 15;
+        int numClients = 2;
+        int numCommandsPerClient = 10;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
