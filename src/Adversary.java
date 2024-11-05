@@ -28,7 +28,7 @@ public class Adversary {
             if (!serverToBlock.isBlocked()){
                 serverToBlock.setBlocked(true);
                 blockedServers.add(serverToBlock);
-                //serverToBlock.setNull();
+                serverToBlock.setNull();
                 System.out.println(serverToBlock.getName() + " is blocked.");
             }
         }

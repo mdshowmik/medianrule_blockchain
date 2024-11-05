@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ServerManager {
-
+    //private Server[] servers;
     private List<Server> servers;
 
     public ServerManager(int numberOfServers, int startingPort) {
@@ -80,6 +80,7 @@ public class ServerManager {
         }
         return false;
     }
+
 
     /*public void printAllServersData() {
         System.out.println(" ");

@@ -68,6 +68,10 @@ public class Server implements Runnable {
         return new ArrayList<>(commandsStored);
     }
 
+    public boolean isCommandStored(String command) {
+        return commandsStored.contains(command);
+    }
+
     public void start() throws IOException {
         running = true;
         System.out.println(name + " started on port " + port);
@@ -193,7 +197,7 @@ public class Server implements Runnable {
 
     //add returned data from other servers
     public void addCommand(String command) {
-        commandsStored.clear();  // Clear all previous commands
+        //commandsStored.clear();  // Clear all previous commands
         if(command != null){
             String[] commandFromServer = command.split(",");
 

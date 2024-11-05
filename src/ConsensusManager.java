@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConsensusManager {
     private ServerManager serverManager;
+    private Client client;
     int roundForConsensus = 0;
 
     public ConsensusManager(ServerManager serverManager) {
@@ -76,7 +77,8 @@ public class ConsensusManager {
 
     public void makeRequestsAndComputeMedian() {
         Adversary adversary = new Adversary(serverManager);
-        while (!isConsensusReached()) {
+        adversary.unblockAllServers();
+        while (!isConsensusReached() && client.allCommandSend) {
             System.out.println("Number of Rounds for Consensus: " + roundForConsensus);
             System.out.println(" ");
 
@@ -121,18 +123,18 @@ public class ConsensusManager {
                     else{
                         String medianResponse = computeMedianResponse(selectedResponses);
                         if (!medianResponse.isEmpty()) {
-                            boolean validity = serverManager.checkValidity(medianResponse);
-                            //System.out.println(validity);
-                            if(validity == true){
+                            //Check validity
+                            if(serverManager.checkValidity(medianResponse) == true){
                                 System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
                                 sourceServer.addCommand(medianResponse);
                             }
                             else{
-                                System.out.println(sourceServer.getName() + " can't accept median response: " + medianResponse + " as it seems suspicious");
+                                System.out.println(sourceServer.getName() + " can't accept median response: " + medianResponse + " as it seems adversarial");
                             }
-                        }
-                        else {
-                            System.out.println(sourceServer.getName() + " can't accept ⊥");
+                            //System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
+                            //sourceServer.addCommand(medianResponse);
+                        } else {
+                            System.out.println(sourceServer.getName() + " can`t accept ⊥");
                         }
                     }
 
@@ -141,7 +143,7 @@ public class ConsensusManager {
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-            adversary.unblockAllServers();
+            //adversary.unblockAllServers();
         }
     }
 
@@ -210,33 +212,54 @@ public class ConsensusManager {
     }
 
     public boolean isConsensusReached() {
-        List<String> referenceCommand = serverManager.getServers().get(0).getCommandsStored();
-        if(referenceCommand.isEmpty()){
-            System.out.println("reference: " + referenceCommand);
-            System.out.println(" ");
-            roundForConsensus++;
-            return false;
-        }
-        else{
-            Collections.sort(referenceCommand);
-
-            for (int i = 1; i < serverManager.getServers().size(); i++) {
-                List<String> commands = serverManager.getServers().get(i).getCommandsStored();
-                Collections.sort(commands);
-                System.out.println("reference: " + referenceCommand);
-                System.out.println("compare: " + commands);
-                System.out.println(commands.equals(referenceCommand));
-                System.out.println(" ");
-                if (commands.isEmpty() || !commands.equals(referenceCommand)) {
+        Adversary adversary = new Adversary(serverManager);
+        for (int i = 0; i < serverManager.getServers().size(); i++){
+            if(!serverManager.getServers().get(i).isBlocked()){
+                List<String> referenceCommand = serverManager.getServers().get(i).getCommandsStored();
+                if(referenceCommand.isEmpty()){
+                    System.out.println("reference: " + referenceCommand);
+                    System.out.println(" ");
                     roundForConsensus++;
-                    serverManager.printAllStoredCommands();
                     return false;
-
+                }
+                else{
+                    Collections.sort(referenceCommand);
+                    for (int j = i+1; j < serverManager.getServers().size(); j++) {
+                        if(!serverManager.getServers().get(j).isBlocked()){
+                            List<String> commands = serverManager.getServers().get(j).getCommandsStored();
+                            Collections.sort(commands);
+                            System.out.println("reference: " + referenceCommand + " from " + serverManager.getServers().get(i).getName());
+                            System.out.println("compare: " + commands + " from " + serverManager.getServers().get(j).getName());
+                            //System.out.println("compare: " + commands);
+                            System.out.println(commands.equals(referenceCommand));
+                            System.out.println(" ");
+                            if (commands.isEmpty() || !commands.equals(referenceCommand)) {
+                                roundForConsensus++;
+                                adversary.unblockAllServers();
+                                serverManager.printAllStoredCommands();
+                                return false;
+                            }
+                        }
+                    }
                 }
             }
+            break;
         }
+        adversary.unblockAllServers();
         System.out.println("Consensus Reached in "+ roundForConsensus + " round");
         serverManager.printAllStoredCommands();
         return true;
+    }
+
+    public boolean checkValidity(Server sourceServer, String command) {
+        List<Server> servers = serverManager.getServers();
+        for (Server server : servers) {
+            if (server != sourceServer && server.isCommandStored(command)) {  // Skip the source server
+                System.out.println(command + " is already stored on " + server.getName());
+                return true; //valid data
+            }
+        }
+        System.out.println(command + " is not stored on any server except " + sourceServer.getName() + ".");
+        return false; //invalid data
     }
 }

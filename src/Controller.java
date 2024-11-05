@@ -42,9 +42,9 @@ public class Controller {
     private ConsensusManager consensusManager;
 
     public void startApplication() throws InterruptedException, IOException {
-        int numServers = 15;
-        int numClients = 2;
-        int numCommandsPerClient = 10;
+        int numServers = 20;
+        int numClients = 1;
+        int numCommandsPerClient = 20;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
