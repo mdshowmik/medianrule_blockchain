@@ -16,7 +16,6 @@ public class Adversary {
 
     public void blockRandomServers() {
         unblockAllServers();
-
         List<Server> servers = serverManager.getServers();
         int totalServers = servers.size();
         int numberOfMaximumServersToBlock = random.nextInt(totalServers / 10) + 1;
@@ -28,7 +27,7 @@ public class Adversary {
             if (!serverToBlock.isBlocked()){
                 serverToBlock.setBlocked(true);
                 blockedServers.add(serverToBlock);
-                //serverToBlock.setNull();
+                serverToBlock.setNull();
                 System.out.println(serverToBlock.getName() + " is blocked.");
             }
         }

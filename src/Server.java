@@ -68,6 +68,11 @@ public class Server implements Runnable {
         return new ArrayList<>(commandsStored);
     }
 
+    public boolean isCommandStored(String command) {
+        return commandsStored.contains(command);
+    }
+
+
     public void start() throws IOException {
         running = true;
         System.out.println(name + " started on port " + port);
@@ -219,7 +224,6 @@ public class Server implements Runnable {
         //commandsStored.add(command);  // Add the new command
         //System.out.println(name + " added command: " + command);
     }
-
 
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
