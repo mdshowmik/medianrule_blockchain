@@ -40,12 +40,14 @@ public class Controller {
     private ServerManager serverManager;
     private ClientManager clientManager;
     private ConsensusManager consensusManager;
+    private volatile boolean clientsActive = true;
 
     public void startApplication() throws InterruptedException, IOException {
-        int numServers = 20;
+        int numServers = 40;
         int numClients = 1;
-        int numCommandsPerClient = 20;
+        int numCommandsPerClient = 100;
         int port = 5000;
+
 
         serverManager = new ServerManager(numServers, port);
         serverManager.startAllServers();
@@ -62,14 +64,20 @@ public class Controller {
             } catch (Exception e) {
                 System.err.println("Error in ClientManager: " + e.getMessage());
             }
+            finally {
+                clientsActive = false;  // Signal that client tasks are done
+            }
         });
 
         Thread consensusThread = new Thread(() -> {
-            try {
-                consensusManager.makeRequestsAndComputeMedian();
-            } catch (Exception e) {
-                System.err.println("Error in ConsensusManager: " + e.getMessage());
+            while(clientsActive){
+                try {
+                    consensusManager.makeRequestsAndComputeMedian();
+                } catch (Exception e) {
+                    System.err.println("Error in ConsensusManager: " + e.getMessage());
+                }
             }
+
         });
 
         // Start both threads

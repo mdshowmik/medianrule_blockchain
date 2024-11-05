@@ -8,7 +8,7 @@ public class Client {
     private int clientId;
     private String serverAddress;
     private ServerManager serverManager;
-    boolean allCommandSend;
+    //boolean allCommandSend;
 
     public Client(int clientId, String serverAddress, ServerManager serverManager) {
         this.clientId = clientId;
@@ -49,6 +49,6 @@ public class Client {
             System.out.println("Client " + clientId + " failed to connect to " + server.getName() + ": " + e.getMessage());
         }
 
-        allCommandSend = true;
+        //allCommandSend = true;
     }
 }

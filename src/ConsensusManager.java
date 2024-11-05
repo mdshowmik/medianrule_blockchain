@@ -9,7 +9,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConsensusManager {
     private ServerManager serverManager;
-    private Client client;
     int roundForConsensus = 0;
 
     public ConsensusManager(ServerManager serverManager) {
@@ -78,7 +77,7 @@ public class ConsensusManager {
     public void makeRequestsAndComputeMedian() {
         Adversary adversary = new Adversary(serverManager);
         adversary.unblockAllServers();
-        while (!isConsensusReached() && client.allCommandSend) {
+        while (!isConsensusReached()) {
             System.out.println("Number of Rounds for Consensus: " + roundForConsensus);
             System.out.println(" ");
 
