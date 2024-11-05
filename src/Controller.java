@@ -48,7 +48,6 @@ public class Controller {
         int numCommandsPerClient = 50;
         int port = 5000;
 
-
         serverManager = new ServerManager(numServers, port);
         serverManager.startAllServers();
 
