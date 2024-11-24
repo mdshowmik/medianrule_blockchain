@@ -5,13 +5,15 @@ public class ClientManager {
     private Client[] clients;
     private int numClients;
     private ServerManager serverManager;
+    private ConsensusManager consensusManager;
 
-    public ClientManager(int numClients, ServerManager serverManager) {
+    public ClientManager(int numClients, ServerManager serverManager, ConsensusManager consensusManager) {
         this.numClients = numClients;
         this.serverManager = serverManager;
+        this.consensusManager = consensusManager;
         clients = new Client[numClients];
         for (int i = 0; i < numClients; i++) {
-            clients[i] = new Client(i + 1, "localhost", serverManager);
+            clients[i] = new Client(i + 1, "localhost", serverManager, consensusManager);
         }
     }
 

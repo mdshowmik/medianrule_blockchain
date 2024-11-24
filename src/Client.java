@@ -8,17 +8,20 @@ public class Client {
     private int clientId;
     private String serverAddress;
     private ServerManager serverManager;
+    private ConsensusManager consensusManager;
     //boolean allCommandSend;
 
-    public Client(int clientId, String serverAddress, ServerManager serverManager) {
+    public Client(int clientId, String serverAddress, ServerManager serverManager, ConsensusManager consensusManager) {
         this.clientId = clientId;
         this.serverAddress = serverAddress;
         this.serverManager = serverManager;
+        this.consensusManager = consensusManager;
     }
 
     //send command to servers
     public void sendCommand(String command) {
-        String formattedCommand = "Client" + clientId + "_" + command;
+        //String formattedCommand = "Client" + clientId + "_" + command;
+        String formattedCommand = "Client" + clientId + "_" + command + "_Round" + consensusManager.getRoundForConsensus();
         Server server = serverManager.getRandomServer();
 
         if (server == null) {

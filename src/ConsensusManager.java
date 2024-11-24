@@ -9,11 +9,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConsensusManager {
     private ServerManager serverManager;
-    int roundForConsensus = 0;
+    private Controller controller;
+    //private AtomicInteger roundForConsensus = new AtomicInteger(0);
+     private int roundForConsensus = 0;
 
-    public ConsensusManager(ServerManager serverManager) {
+
+    public ConsensusManager(ServerManager serverManager, Controller controller) {
         this.serverManager = serverManager;
+        this.controller = controller;
     }
+
+    public int getRoundForConsensus() {
+        System.out.print(roundForConsensus);
+        return roundForConsensus;
+    }
+
+    /*public void incrementRound() {
+        roundForConsensus.incrementAndGet();
+    }*/
 
     //initiates adversary and server to server request
     /*public void makeRequestsAndComputeMedian() {
@@ -169,7 +182,7 @@ public class ConsensusManager {
 
 
     public String computeMedianResponse(List<String> responses) {
-        /*//Collections.sort(responses);
+        /* Collections.sort(responses);
         System.out.println("3 responses" + responses);
         //int medianIndex = responses.size() / 2;
 
@@ -210,45 +223,136 @@ public class ConsensusManager {
 
     }
 
+//    public boolean isConsensusReached() {
+//        Adversary adversary = new Adversary(serverManager);
+//        for (int i = 0; i < serverManager.getServers().size(); i++){
+//            if(!serverManager.getServers().get(i).isBlocked()){
+//                List<String> referenceCommand = serverManager.getServers().get(i).getCommandsStored();
+//                if(referenceCommand.isEmpty()){
+//                    System.out.println("reference: " + referenceCommand);
+//                    System.out.println(" ");
+//                    roundForConsensus++;
+//                    return false;
+//                }
+//                else{
+//                    Collections.sort(referenceCommand);
+//                    for (int j = i+1; j < serverManager.getServers().size(); j++) {
+//                        if(!serverManager.getServers().get(j).isBlocked()){
+//                            List<String> commands = serverManager.getServers().get(j).getCommandsStored();
+//                            Collections.sort(commands);
+//                            System.out.println("reference: " + referenceCommand + " from " + serverManager.getServers().get(i).getName());
+//                            System.out.println(serverManager.getServers().get(j).getName());
+//                            System.out.println("compare: " + commands + " from " + serverManager.getServers().get(j).getName());
+//                            //System.out.println("compare: " + commands);
+//                            System.out.println(commands.equals(referenceCommand));
+//                            System.out.println(" ");
+//                            if (commands.isEmpty() || !commands.equals(referenceCommand)) {
+//                                roundForConsensus++;
+//                                adversary.unblockAllServers();
+//                                serverManager.printAllStoredCommands();
+//                                return false;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            break;
+//        }
+//        adversary.unblockAllServers();
+//        System.out.println("Consensus Reached in "+ roundForConsensus + " round");
+//        serverManager.printAllStoredCommands();
+//        return true;
+//    }
+
+
+//    public boolean isConsensusReached() {
+//        Adversary adversary = new Adversary(serverManager);
+//        List<Server> servers = serverManager.getServers();
+//        List<List<String>> commandsFromAllServers = new ArrayList<>();
+//
+//        // Prepare and collect commands from all non-blocked servers
+//        for (Server server : servers) {
+//            if (!server.isBlocked()) {
+//                List<String> storedCommands = new ArrayList<>(server.getCommandsStored());
+//                Collections.sort(storedCommands);
+//                commandsFromAllServers.add(storedCommands);
+//            }
+//        }
+//
+//        if (commandsFromAllServers.isEmpty()) {
+//            System.out.println("No active servers to check for consensus.");
+//            return false;
+//        }
+//
+//        // Check if all non-blocked servers have identical command lists
+//        List<String> referenceCommands = commandsFromAllServers.get(0);
+//        for (int i = 1; i < commandsFromAllServers.size(); i++) {
+//            System.out.println("Reference commands from first active server: " + referenceCommands);
+//            System.out.println("Comparing with commands from server " + (i+1) + ": " + commandsFromAllServers.get(i));
+//
+//            if (!commandsFromAllServers.get(i).equals(referenceCommands)) {
+//                System.out.println("Consensus not reached. Discrepancy found between server 1 and server " + (i+1) + ".");
+//                roundForConsensus++;
+//                adversary.unblockAllServers();
+//                serverManager.printAllStoredCommands();
+//                return false;
+//            }
+//        }
+//
+//        // If all lists are identical
+//        adversary.unblockAllServers();
+//        System.out.println("Consensus Reached in " + roundForConsensus + " rounds");
+//        serverManager.printAllStoredCommands();
+//        return true;
+//    }
+
+
     public boolean isConsensusReached() {
         Adversary adversary = new Adversary(serverManager);
-        for (int i = 0; i < serverManager.getServers().size(); i++){
-            if(!serverManager.getServers().get(i).isBlocked()){
-                List<String> referenceCommand = serverManager.getServers().get(i).getCommandsStored();
-                if(referenceCommand.isEmpty()){
-                    System.out.println("reference: " + referenceCommand);
-                    System.out.println(" ");
+        List<Server> servers = serverManager.getServers();
+        List<List<String>> commandsFromAllServers = new ArrayList<>();
+
+        // Prepare and collect commands from all non-blocked servers
+        for (Server server : servers) {
+            if (!server.isBlocked()) {
+                List<String> storedCommands = new ArrayList<>(server.getCommandsStored());
+                if (storedCommands.isEmpty()) {
+                    System.out.println("Server " + server.getName() + " has no commands stored.");
+                    adversary.unblockAllServers();
                     roundForConsensus++;
-                    return false;
+                    //incrementRound();
+                    return false; // Return false immediately if any server has an empty command list
                 }
-                else{
-                    Collections.sort(referenceCommand);
-                    for (int j = i+1; j < serverManager.getServers().size(); j++) {
-                        if(!serverManager.getServers().get(j).isBlocked()){
-                            List<String> commands = serverManager.getServers().get(j).getCommandsStored();
-                            Collections.sort(commands);
-                            System.out.println("reference: " + referenceCommand + " from " + serverManager.getServers().get(i).getName());
-                            System.out.println("compare: " + commands + " from " + serverManager.getServers().get(j).getName());
-                            //System.out.println("compare: " + commands);
-                            System.out.println(commands.equals(referenceCommand));
-                            System.out.println(" ");
-                            if (commands.isEmpty() || !commands.equals(referenceCommand)) {
-                                roundForConsensus++;
-                                adversary.unblockAllServers();
-                                serverManager.printAllStoredCommands();
-                                return false;
-                            }
-                        }
-                    }
-                }
+                Collections.sort(storedCommands);
+                commandsFromAllServers.add(storedCommands);
             }
-            break;
         }
+
+        if (commandsFromAllServers.isEmpty()) {
+            System.out.println("No active servers to check for consensus.");
+            return false;
+        }
+
+        // Check if all non-blocked servers have identical command lists
+        List<String> referenceCommands = commandsFromAllServers.get(0);
+        for (List<String> commands : commandsFromAllServers) {
+            if (!commands.equals(referenceCommands)) {
+                System.out.println("Consensus not reached. Discrepancy found between servers.");
+                adversary.unblockAllServers();
+                roundForConsensus++;
+                //incrementRound();
+                serverManager.printAllStoredCommands();
+                return false;
+            }
+        }
+
+        // If all lists are identical and non-empty
         adversary.unblockAllServers();
-        System.out.println("Consensus Reached in "+ roundForConsensus + " round");
+        System.out.println("Consensus Reached in " + roundForConsensus + " rounds");
         serverManager.printAllStoredCommands();
         return true;
     }
+
 
     public boolean checkValidity(Server sourceServer, String command) {
         List<Server> servers = serverManager.getServers();
