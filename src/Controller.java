@@ -43,9 +43,9 @@ public class Controller {
     public volatile boolean clientsActive = true;
 
     public void startApplication() throws InterruptedException, IOException {
-        int numServers = 10;
-        int numClients = 20;
-        int numCommandsPerClient = 5;
+        int numServers = 15;
+        int numClients = 1;
+        int numCommandsPerClient = 20;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
@@ -78,7 +78,6 @@ public class Controller {
                     // Make requests and compute median
                     consensusManager.makeRequestsAndComputeMedian();
 
-                    // Sleep briefly to prevent overwhelming the CPU and to simulate processing time
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -94,7 +93,7 @@ public class Controller {
         });
 
 
-        // Monitoring thread: reports the state of client and consensus threads
+        // Monitoring thread, reports the state of client and consensus threads
         Thread monitorThread = new Thread(() -> {
             try {
                 while (clientThread.isAlive() || consensusThread.isAlive()) {
@@ -124,5 +123,7 @@ public class Controller {
         serverManager.printAllStoredCommands();
 
         serverManager.stopAllServers();
+
+        serverManager.valueofT(numServers);
     }
 }

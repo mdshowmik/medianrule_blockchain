@@ -21,6 +21,7 @@ public class Client {
     //send command to servers
     public void sendCommand(String command) {
         //String formattedCommand = "Client" + clientId + "_" + command;
+        //String formattedCommand = "Client" + clientId + "_Round" + consensusManager.getRoundForConsensus()+ "_" + command ;
         String formattedCommand = "Client" + clientId + "_" + command + "_Round" + consensusManager.getRoundForConsensus();
         Server server = serverManager.getRandomServer();
 

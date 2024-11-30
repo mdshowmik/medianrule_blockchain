@@ -206,6 +206,7 @@ public class Server implements Runnable {
 
                 if(!breakingCommandList.isEmpty() && !commandsStored.contains(breakingCommandList)){
                     commandsStored.add(breakingCommandList);
+                    //Collections.sort(commandsStored);
                     System.out.println(name + " added command: " + breakingCommandList);
                 }
             }

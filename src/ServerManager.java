@@ -81,6 +81,16 @@ public class ServerManager {
         return false;
     }
 
+    public double valueofT(int n){
+        // Compute the base-10 logarithm of n
+        double logBase10 = Math.log(n) / Math.log(10);
+        int tau = 2;
+        double T =  tau * logBase10;
+        System.out.println("tau = " + T);
+
+        return T;
+    }
+
 
     /*public void printAllServersData() {
         System.out.println(" ");

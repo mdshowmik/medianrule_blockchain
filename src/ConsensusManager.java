@@ -20,7 +20,7 @@ public class ConsensusManager {
     }
 
     public int getRoundForConsensus() {
-        System.out.print(roundForConsensus);
+        //System.out.print(roundForConsensus);
         return roundForConsensus;
     }
 
@@ -182,7 +182,16 @@ public class ConsensusManager {
 
 
     public String computeMedianResponse(List<String> responses) {
-        /* Collections.sort(responses);
+
+        Set<String> uniqueData = new HashSet<>(responses);
+        uniqueData.remove("");
+        uniqueData.remove(null);
+
+        String finalMedianList = String.join(", ", uniqueData);
+
+        return finalMedianList;
+
+        /*Collections.sort(responses);
         System.out.println("3 responses" + responses);
         //int medianIndex = responses.size() / 2;
 
@@ -211,16 +220,14 @@ public class ConsensusManager {
 
         return finalMedianList;*/
 
-        Set<String> uniqueData = new HashSet<>(responses);
+        //it works
+        /*Set<String> uniqueData = new HashSet<>(responses);
         uniqueData.remove("");
         uniqueData.remove(null);
 
         String finalMedianList = String.join(", ", uniqueData);
 
-        //System.out.println("merged responses: " + finalMedianList);
-
-        return finalMedianList;
-
+        return finalMedianList;*/
     }
 
 //    public boolean isConsensusReached() {
@@ -317,7 +324,7 @@ public class ConsensusManager {
             if (!server.isBlocked()) {
                 List<String> storedCommands = new ArrayList<>(server.getCommandsStored());
                 if (storedCommands.isEmpty()) {
-                    System.out.println("Server " + server.getName() + " has no commands stored.");
+                    System.out.println(server.getName() + " has no commands stored.");
                     adversary.unblockAllServers();
                     roundForConsensus++;
                     //incrementRound();
