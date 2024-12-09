@@ -22,16 +22,18 @@ public class Client {
     public void sendCommand(String command) {
         //String formattedCommand = "Client" + clientId + "_" + command;
         //String formattedCommand = "Client" + clientId + "_Round" + consensusManager.getRoundForConsensus()+ "_" + command ;
-        String formattedCommand = "Client" + clientId + "_" + command + "_Round" + consensusManager.getRoundForConsensus();
+        //String formattedCommand = "Client" + clientId + "_" + command + "_Round" + consensusManager.getRoundForConsensus();
+        String formattedCommand = command;
+
         Server server = serverManager.getRandomServer();
 
         if (server == null) {
-            System.out.println("No available server to send the command.");
+            //System.out.println("No available server to send the command."); uncomment
             return;
         }
 
         while (server.isBusy()) {
-            System.out.println(server.getName() + " is currently busy. Client" + clientId + " is waiting to send the command.");
+            //System.out.println(server.getName() + " is currently busy. Client" + clientId + " is waiting to send the command."); uncomment
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -43,14 +45,14 @@ public class Client {
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            System.out.println("Client " + clientId + " sends " + formattedCommand + " to " + server.getName());
+            //System.out.println("Client " + clientId + " sends " + formattedCommand + " to " + server.getName()); uncomment
             out.println(formattedCommand);
 
             String response = in.readLine();
-            System.out.println("Client " + clientId + " receives response from " + server.getName() + ": " + response);
+            //System.out.println("Client " + clientId + " receives response from " + server.getName() + ": " + response); uncomment
 
         } catch (IOException e) {
-            System.out.println("Client " + clientId + " failed to connect to " + server.getName() + ": " + e.getMessage());
+            //System.out.println("Client " + clientId + " failed to connect to " + server.getName() + ": " + e.getMessage()); uncomment
         }
 
         //allCommandSend = true;

@@ -197,7 +197,7 @@ public class Server implements Runnable {
 
     //add returned data from other servers
     public void addCommand(String command) {
-        //commandsStored.clear();  // Clear all previous commands
+        commandsStored.clear();  // Clear all previous commands
         if(command != null){
             String[] commandFromServer = command.split(",");
 
@@ -207,7 +207,7 @@ public class Server implements Runnable {
                 if(!breakingCommandList.isEmpty() && !commandsStored.contains(breakingCommandList)){
                     commandsStored.add(breakingCommandList);
                     //Collections.sort(commandsStored);
-                    System.out.println(name + " added command: " + breakingCommandList);
+                    //System.out.println(name + " added command: " + breakingCommandList); uncomment
                 }
             }
         }

@@ -7,7 +7,7 @@ public class Controller {
     private ConsensusManager consensusManager;
 
     public void startApplication() throws InterruptedException, IOException {
-        int numServers = 10;
+        int numServers = 15;
         int numClients = 1;
         int numCommandsPerClient = 100;
         int port = 5000;
@@ -17,14 +17,14 @@ public class Controller {
 
         //serverManager.assignRandomDataToServers();
 
-        //clientManager = new ClientManager(numClients, serverManager);
-        //clientManager.startClients(numCommandsPerClient);
+        clientManager = new ClientManager(numClients, serverManager, consensusManager);
+        clientManager.startClients(numCommandsPerClient);
 
         Thread.sleep(1000);
 
         serverManager.printAllStoredCommands();
 
-        consensusManager = new ConsensusManager(serverManager);
+        consensusManager = new ConsensusManager(serverManager, this);
         consensusManager.makeRequestsAndComputeMedian();
 
         serverManager.printAllStoredCommands();
@@ -34,6 +34,7 @@ public class Controller {
 }*/
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 public class Controller {
 
@@ -42,10 +43,10 @@ public class Controller {
     private ConsensusManager consensusManager;
     public volatile boolean clientsActive = true;
 
-    public void startApplication() throws InterruptedException, IOException {
+    public void startApplication(PrintStream out) throws InterruptedException, IOException {
         int numServers = 15;
         int numClients = 1;
-        int numCommandsPerClient = 20;
+        int numCommandsPerClient = 10;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
@@ -67,7 +68,7 @@ public class Controller {
 
         Thread consensusThread = new Thread(() -> {
             while (true) {
-                if (!clientsActive && consensusManager.isConsensusReached()) {
+                if (!clientsActive && consensusManager.isConsensusReached(out)) {
                     break;
                 }
                 try {
@@ -76,7 +77,7 @@ public class Controller {
 //                            ", consensus reached: " + consensusManager.isConsensusReached());
 
                     // Make requests and compute median
-                    consensusManager.makeRequestsAndComputeMedian();
+                    consensusManager.makeRequestsAndComputeMedian(out);
 
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -89,7 +90,7 @@ public class Controller {
             }
 
             System.out.println("Consensus process completed. Clients active: " + clientsActive +
-                    ", consensus reached: " + consensusManager.isConsensusReached());
+                    ", consensus reached: " + consensusManager.isConsensusReached(out));
         });
 
 
@@ -120,7 +121,7 @@ public class Controller {
         Thread.sleep(2000);  // Consider the necessity and implications of this sleep
 
         // Print commands after all clients and consensus operations have completed
-        serverManager.printAllStoredCommands();
+        serverManager.printAllStoredCommands(out);
 
         serverManager.stopAllServers();
 

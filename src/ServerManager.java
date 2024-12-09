@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,14 +50,24 @@ public class ServerManager {
         }
     }
 
-    public void printAllStoredCommands() {
+    /*public void printAllStoredCommands() {   //uncomment
         System.out.println(" ");
         for (Server server : servers) {
             System.out.print(server.getName() + ": ");
             System.out.println(String.join(", ", server.getCommandsStored()));
         }
         System.out.println(" ");
+    }*/
+
+    public void printAllStoredCommands(PrintStream out) {
+        out.println(" ");
+        for (Server server : servers) {
+            out.print(server.getName() + ": ");
+            out.println(String.join(", ", server.getCommandsStored()));
+        }
+        out.println(" ");
     }
+
 
     // check command validity
     public boolean checkValidity(String commandToCheck) {
