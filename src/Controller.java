@@ -44,9 +44,9 @@ public class Controller {
     public volatile boolean clientsActive = true;
 
     public void startApplication(PrintStream out) throws InterruptedException, IOException {
-        int numServers = 15;
+        int numServers = 10;
         int numClients = 1;
-        int numCommandsPerClient = 10;
+        int numCommandsPerClient = 100;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
@@ -122,6 +122,8 @@ public class Controller {
 
         // Print commands after all clients and consensus operations have completed
         serverManager.printAllStoredCommands(out);
+
+        System.out.println("Consensus Reached in " + consensusManager.roundForConsensus + " rounds");
 
         serverManager.stopAllServers();
 

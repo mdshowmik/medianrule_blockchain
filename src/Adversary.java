@@ -38,6 +38,7 @@ public class Adversary {
         for (Server server : blockedServers) {
             server.setBlocked(false);
             System.out.println(server.getName() + " is unblocked.");
+            blockedServers.clear();
         }
         System.out.println(" ");
         blockedServers.clear();

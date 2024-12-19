@@ -8,7 +8,7 @@ public class ConsensusManager {
     private ServerManager serverManager;
     private Controller controller;
     //private AtomicInteger roundForConsensus = new AtomicInteger(0);
-     private int roundForConsensus = 0;
+    public int roundForConsensus = 0;
 
 
     public ConsensusManager(ServerManager serverManager, Controller controller) {
@@ -194,35 +194,65 @@ public class ConsensusManager {
     public String computeMedianResponse(List<String> responses) {
 
         String firstResponse = responses.get(0);
-        String middleResponse = responses.get(1);
-        String lastResponse = responses.get(2);
-
-        String subset = firstResponse + lastResponse;
+        String secondResponse = responses.get(1);
+        String thirdreslist = responses.get(2);
 
 
-        List<String> firstreslist = cleanAndSplit(firstResponse);
-        List<String> secondreslist = cleanAndSplit(middleResponse);
-        List<String> thirdreslist = cleanAndSplit(lastResponse);
+        List<String> firstResponseList = cleanAndSplit(firstResponse);
+        List<String> secondResponseList = cleanAndSplit(secondResponse);
+        List<String> thirdResponseList = cleanAndSplit(thirdreslist);
 
-        Set<String> hasnew = new LinkedHashSet<>();
 
-        // Add values from middleResponse first (this ensures they are prioritized)
-        hasnew.addAll(secondreslist);
+        String combinedStringofFirstResponse = String.join("", firstResponseList);
+        double numericValueFirstresponse = Double.parseDouble("0." + combinedStringofFirstResponse);
+        System.out.println("Value of First Response: " + numericValueFirstresponse);
 
-        // Then add the values from firstResponse and lastResponse
-        hasnew.addAll(firstreslist);
-        hasnew.addAll(thirdreslist);
+
+        String combinedStringofSecondResponse = String.join("", secondResponseList);
+        double numericValueSecondResponse = Double.parseDouble("0." + combinedStringofSecondResponse);
+        System.out.println("Value of Second Response: " + numericValueSecondResponse);
+
+        String combinedStringofthirdResponse = String.join("", thirdResponseList);
+        double numericValueThirdResponse = Double.parseDouble("0." + combinedStringofthirdResponse);
+        System.out.println("Value of Third Response: " + numericValueThirdResponse);
+
+        Set<String> medianListSubset = new LinkedHashSet<>();
+
+        if((numericValueFirstresponse >= numericValueSecondResponse && numericValueFirstresponse <= numericValueThirdResponse) || (numericValueFirstresponse <= numericValueSecondResponse && numericValueFirstresponse >= numericValueThirdResponse)){
+            medianListSubset.addAll(firstResponseList);
+
+            medianListSubset.addAll(secondResponseList);
+            medianListSubset.addAll(thirdResponseList);
+
+        }
+        else if((numericValueSecondResponse >= numericValueFirstresponse && numericValueSecondResponse <= numericValueThirdResponse) || (numericValueSecondResponse <= numericValueFirstresponse && numericValueSecondResponse >= numericValueThirdResponse)){
+            medianListSubset.addAll(secondResponseList);
+
+            medianListSubset.addAll(firstResponseList);
+            medianListSubset.addAll(thirdResponseList);
+        }
+        else if((numericValueThirdResponse >= numericValueFirstresponse && numericValueThirdResponse <= numericValueSecondResponse) || (numericValueThirdResponse <= numericValueFirstresponse && numericValueThirdResponse >= numericValueSecondResponse)){
+            medianListSubset.addAll(thirdResponseList);
+
+            medianListSubset.addAll(firstResponseList);
+            medianListSubset.addAll(secondResponseList);
+        }
+        else{
+            medianListSubset.addAll(firstResponseList);
+            medianListSubset.addAll(secondResponseList);
+            medianListSubset.addAll(thirdResponseList);
+        }
 
         // Remove empty and null values
-        hasnew.remove("");
-        hasnew.remove(null);
+        medianListSubset.remove("");
+        medianListSubset.remove(null);
 
 
-        String finalMedianList = String.join(", ", hasnew);
+        String finalMedianList = String.join(", ", medianListSubset);
 
         System.out.println("1st response - " + firstResponse);
-        System.out.println("2nd response - " + middleResponse);
-        System.out.println("3rd response - " + lastResponse);
+        System.out.println("2nd response - " + secondResponse);
+        System.out.println("3rd response - " + thirdreslist);
 
         //System.out.println("subset - " + subset);
         System.out.println("median response - " + finalMedianList);
