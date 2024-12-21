@@ -78,8 +78,6 @@ public class Controller {
 
     public void startApplication(PrintStream out) throws InterruptedException, IOException {
         int numServers = 15;
-
-
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
