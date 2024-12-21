@@ -70,6 +70,7 @@ public class ConsensusManager {
                         if (!medianResponse.isEmpty()) {
                             if (serverManager.checkValidity(medianResponse)) {
                                 sourceServer.addCommand(medianResponse);
+                                sourceServer.addLeafToMerkleTree(medianResponse);
                             }
                         }
                     }
@@ -80,6 +81,34 @@ public class ConsensusManager {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
     }
+
+    public boolean areMerkleRootsConsistent() {
+        String referenceRoot = serverManager.getServers().get(0).getMerkleRoot();
+        for (Server server : serverManager.getServers()) {
+            if (!referenceRoot.equals(server.getMerkleRoot())) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public void visualizeMerkleTreesAfterConsensus() {
+
+        for (Server server : serverManager.getServers()) {
+            if (!server.isBlocked()) {
+                try {
+                    MerkleTree visualizer = new MerkleTree();
+                    String fileName = "merkle_tree_" + server.getName() + ".png";
+                    System.out.println("Printing the tree"+fileName);
+                    visualizer.visualizeTreeAsImage(server.getMerkleTreeLeaves(), "MerkelTree/"+fileName);
+                    System.out.println("Merkle tree for " + server.getName() + " saved as: " + fileName);
+                } catch (IOException e) {
+                    System.err.println("Error visualizing Merkle tree for " + server.getName() + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+
 
 
 //    public void makeRequestsAndComputeMedian(PrintStream out) {
@@ -345,6 +374,7 @@ public class ConsensusManager {
                 System.out.println(currentCSVFilename);
                 serverManager.storedInCSVFile(currentCSVFilename);
                 serverManager.printAllStoredCommands(out);
+
                 return true;
             }
         }

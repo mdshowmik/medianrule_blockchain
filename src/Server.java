@@ -21,6 +21,7 @@ public class Server implements Runnable {
     private boolean isready;
     private boolean blocked = false;
     private CopyOnWriteArrayList<String> commandsStored = new CopyOnWriteArrayList<>();
+    private MerkleTree merkleTree = new MerkleTree();
 
 
     public Server(String name, int port) throws IOException {
@@ -156,6 +157,10 @@ public class Server implements Runnable {
                     } else {
                         System.out.println(name + " received: " + command);
                         commandsStored.add(command);
+                        System.out.println("^^^^^^^^^^^^^^^^");
+                        System.out.println(command);
+                        merkleTree.addLeaf(command);
+
                         commandCount++;
                         commandsReceived.add(command);
                         ClientManager.totalCommandsSent++;
@@ -215,6 +220,32 @@ public class Server implements Runnable {
         }
     }
 
+    public void addLeafToMerkleTree(String command) {
+        if(command != null){
+            String[] commandFromServer = command.split(",");
+            for (String breakingCommandList:commandFromServer) {
+                breakingCommandList = breakingCommandList.replaceAll("\\s","");
+
+                if(!breakingCommandList.isEmpty()){
+                    System.out.println(breakingCommandList);
+                    merkleTree.addLeaf(breakingCommandList);
+                }
+            }
+        }
+    }
+
+    public String getMerkleRoot() {
+        return merkleTree.getRoot();
+    }
+
+    public List<String> getMerkleProof(String command) {
+        return merkleTree.getProof(command);
+    }
+    public List<String> getMerkleTreeLeaves() {
+        return merkleTree.getLeaves(); // Ensure `getLeaves()` is implemented in MerkleTree
+    }
+
+
     public void setCommands(List<String> newCommands) {
         commandsStored.clear();  // Clear all previous commands
         if (newCommands != null) {
@@ -226,6 +257,8 @@ public class Server implements Runnable {
             }
         }
     }
+
+
 
     /*public void addCommand(String command) {
         commandsStored.clear();  // Clear all previous commands

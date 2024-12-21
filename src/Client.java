@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 public class Client {
     private int clientId;
@@ -61,4 +62,13 @@ public class Client {
 
         //allCommandSend = true;
     }
+
+    public List<String> requestMerkleProof(String command) {
+        Server server = serverManager.getRandomServer();
+        if (server != null) {
+            return server.getMerkleProof(command);
+        }
+        return null;
+    }
+
 }

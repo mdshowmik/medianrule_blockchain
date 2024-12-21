@@ -47,7 +47,7 @@ public class Controller {
     private ClientManager clientManager;
     private ConsensusManager consensusManager;
     public volatile boolean clientsActive = true;
-    int numClients = 4;
+    int numClients = 1;
     int numCommandsPerClient = 50;
     private static final Path directoryPath;
     static {
@@ -77,7 +77,7 @@ public class Controller {
     }
 
     public void startApplication(PrintStream out) throws InterruptedException, IOException {
-        int numServers = 15;
+        int numServers = 10;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
@@ -156,9 +156,10 @@ public class Controller {
 //        serverManager.printAllStoredCommands(out);
 
         System.out.println("Consensus Reached in " + consensusManager.getRoundForConsensus() + " rounds");
-
+        consensusManager.visualizeMerkleTreesAfterConsensus();
         serverManager.stopAllServers();
 
         serverManager.valueofT(numServers);
+
     }
 }
