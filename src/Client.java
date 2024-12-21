@@ -21,16 +21,19 @@ public class Client {
     //send command to servers
     public void sendCommand(int command) {
         //String formattedCommand = "Client" + clientId + "_" + command;
-        //String formattedCommand = "Client" + clientId + "_Round" + consensusManager.getRoundForConsensus()+ "_" + command ;
+        String formattedCommand = "Client" + clientId + "_Round" + consensusManager.getRoundForConsensus()+ "_" + command ;
         //String formattedCommand = "Client" + clientId + "_" + command + "_Round" + consensusManager.getRoundForConsensus();
-        int formattedCommand = command;
+        //int formattedCommand = command;
 
         Server server = serverManager.getRandomServer();
+        System.out.println("Current server:"+server.getName());
+        System.out.println("Busy server:"+server.isBlocked());
 
         if (server == null) {
             //System.out.println("No available server to send the command."); uncomment
             return;
         }
+
 
         while (server.isBusy()) {
             //System.out.println(server.getName() + " is currently busy. Client" + clientId + " is waiting to send the command."); uncomment
@@ -44,6 +47,7 @@ public class Client {
         try (Socket socket = new Socket(serverAddress, server.getPort());
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
 
             //System.out.println("Client " + clientId + " sends " + formattedCommand + " to " + server.getName()); uncomment
             out.println(formattedCommand);

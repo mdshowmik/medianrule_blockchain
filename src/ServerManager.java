@@ -1,5 +1,7 @@
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,12 +25,33 @@ public class ServerManager {
         }
     }
 
+//    public Server getRandomServer() {
+//        Random random = new Random();
+//        if (!servers.isEmpty()) {
+//            Server currentServer = servers.get(random.nextInt(servers.size()));
+//            if(curr)
+////            return servers.get(random.nextInt(servers.size()));
+//        }
+//        else {
+//            System.out.println("No servers available.");
+//            return null;
+//        }
+//    }
+
     public Server getRandomServer() {
         Random random = new Random();
-        if (!servers.isEmpty()) {
-            return servers.get(random.nextInt(servers.size()));
-        } else {
+        if (servers.isEmpty()) {
             System.out.println("No servers available.");
+            return null;
+        } else {
+            int totalServers = servers.size();
+            for (int i = 0; i < totalServers; i++) {
+                Server currentServer = servers.get(random.nextInt(totalServers));
+                if (!currentServer.isBusy() && !currentServer.isBlocked()) {
+                    return currentServer;
+                }
+            }
+            System.out.println("All servers are currently busy or blocked.");
             return null;
         }
     }
@@ -60,12 +83,30 @@ public class ServerManager {
     }*/
 
     public void printAllStoredCommands(PrintStream out) {
+
+        out.println("Current Command"+ClientManager.totalCommandsSent);
+        out.println("Consensus Status"+ConsensusManager.concensusComplete);
         out.println(" ");
         for (Server server : servers) {
             out.print(server.getName() + ": ");
             out.println(String.join(", ", server.getCommandsStored()));
         }
         out.println(" ");
+
+
+    }
+
+    public void storedInCSVFile(String filename){
+        try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
+            for (Server server : servers) {
+                // Collect all commands for the server, joined by commas
+                String commands = String.join(",", server.getCommandsStored());
+                out.println(commands);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

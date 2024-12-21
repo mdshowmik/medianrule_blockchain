@@ -154,10 +154,12 @@ public class Server implements Runnable {
                         }
 
                     } else {
-                        //System.out.println(name + " received: " + command);
+                        System.out.println(name + " received: " + command);
                         commandsStored.add(command);
                         commandCount++;
                         commandsReceived.add(command);
+                        ClientManager.totalCommandsSent++;
+//                        System.out.println("Current Command is : "+ ClientManager.totalCommandsSent);
 
                         out.println(command + " Received");
                         //System.out.println(name + " stored command: " + command);
@@ -213,6 +215,18 @@ public class Server implements Runnable {
         }
     }
 
+    public void setCommands(List<String> newCommands) {
+        commandsStored.clear();  // Clear all previous commands
+        if (newCommands != null) {
+            for (String command : newCommands) {
+                command = command.replaceAll("\\s", "");  // Remove all spaces
+                if (!command.isEmpty() && !commandsStored.contains(command)) {
+                    commandsStored.add(command);
+                }
+            }
+        }
+    }
+
     /*public void addCommand(String command) {
         commandsStored.clear();  // Clear all previous commands
         commandsStored.add(command);  // Add the new command
@@ -220,9 +234,8 @@ public class Server implements Runnable {
     }*/
 
     public void setNull() {
+        System.out.println("Currently clearing the blocked server named: "+getName());
         commandsStored.clear();  // Clear all previous commands
-        //commandsStored.add(command);  // Add the new command
-        //System.out.println(name + " added command: " + command);
     }
 
 

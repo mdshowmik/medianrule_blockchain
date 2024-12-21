@@ -6,6 +6,7 @@ public class ClientManager {
     private int numClients;
     private ServerManager serverManager;
     private ConsensusManager consensusManager;
+    public static int totalCommandsSent = 0;
 
     public ClientManager(int numClients, ServerManager serverManager, ConsensusManager consensusManager) {
         this.numClients = numClients;

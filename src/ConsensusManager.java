@@ -9,6 +9,7 @@ public class ConsensusManager {
     private Controller controller;
     //private AtomicInteger roundForConsensus = new AtomicInteger(0);
     public int roundForConsensus = 0;
+    public static boolean concensusComplete = false;
 
 
     public ConsensusManager(ServerManager serverManager, Controller controller) {
@@ -21,91 +22,26 @@ public class ConsensusManager {
         return roundForConsensus;
     }
 
-    /*public void incrementRound() {
-        roundForConsensus.incrementAndGet();
-    }*/
-
-    //initiates adversary and server to server request
-    /*public void makeRequestsAndComputeMedian() {
-        Adversary adversary = new Adversary(serverManager);
-        while (!isConsensusReached()) {
-            System.out.println("Number of Rounds for Consensus: " + roundForConsensus);
-            System.out.println(" ");
-
-            adversary.blockRandomServers();
-
-            List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-            for (Server sourceServer : serverManager.getServers()) {
-                if (sourceServer.isBlocked()) {
-                    System.out.println(sourceServer.getName() + " is blocked and cannot send requests this round.");
-                    continue;
-                }
-
-                CopyOnWriteArrayList<String> responses = new CopyOnWriteArrayList<>();
-                Set<Server> requestedServers = new HashSet<>();
-
-                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                    for (int i = 0; i < 3; i++) {
-                        Server targetServer;
-                        do {
-                            targetServer = serverManager.getRandomServer();
-                        } while (targetServer == sourceServer || requestedServers.contains(targetServer) || targetServer.isBlocked());
-
-                        requestedServers.add(targetServer);
-
-                        String requestData = "Request from " + sourceServer.getName();
-                        String response = requestFromServerToServer(sourceServer, targetServer, requestData);
-                        responses.add(response);
-                        if(!response.isEmpty()){
-                            System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": " + response);
-                        }
-                        else {
-                            System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": No Data");
-                        }
-                    }
-
-                    String medianResponse = computeMedianResponse(responses);
-                    if(!medianResponse.isEmpty()){
-                        System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
-                    }
-                    else{
-                        System.out.println(sourceServer.getName() + " accepted median response: No Data");
-                    }
-
-
-                    sourceServer.addCommand(medianResponse);
-                });
-                futures.add(future);
-            }
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-            adversary.unblockAllServers();
-        }
-    }*/
-
     public void makeRequestsAndComputeMedian(PrintStream out) {
         Adversary adversary = new Adversary(serverManager);
-        adversary.unblockAllServers();
+        adversary.unblockAllServers(out);
         while (!isConsensusReached(out)) {
             System.out.println("Number of Rounds for Consensus: " + roundForConsensus);
             System.out.println(" ");
             out.println("Number of Rounds for Consensus: " + roundForConsensus);
 
-            adversary.blockRandomServers();
+            adversary.blockRandomServers(out);
 
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (Server sourceServer : serverManager.getServers()) {
                 if (sourceServer.isBlocked()) {
-                    //System.out.println(sourceServer.getName() + " is blocked and cannot receive any key in this round."); uncomment
-                    //System.out.println(sourceServer.getName() + " set to ⊥"); uncomment
-                    //sourceServer.setNull();
+                    sourceServer.setNull();
                     continue;
                 }
 
-                CopyOnWriteArrayList<String> responses = new CopyOnWriteArrayList<>();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    CopyOnWriteArrayList<String> responses = new CopyOnWriteArrayList<>();
                     for (int i = 0; i < 6; i++) {  // Send 6 requests
                         Server targetServer;
                         do {
@@ -114,48 +50,110 @@ public class ConsensusManager {
 
                         String requestData = "Request from " + sourceServer.getName();
                         String response = requestFromServerToServer(sourceServer, targetServer, requestData);
-                        responses.add(response);
                         if (!response.isEmpty()) {
-                            //System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": " + response); uncomment
-                        } else {
-                            //System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": ⊥"); uncomment
+                            responses.add(response);
                         }
                     }
 
-                    // Randomly select 3 responses to compute the median
-                    Collections.shuffle(responses);
-                    List<String> selectedResponses = responses.subList(0, 3);
-
-                    if(selectedResponses.size() < 3) {
+                    // Check for enough responses before attempting to compute median
+                    if (responses.size() < 3) {
                         System.out.println("Not enough responses available");
                         sourceServer.setNull();
-                    }
-                    else{
+                    } else {
+                        // Ensure safe access to responses
+                        List<String> selectedResponses = new ArrayList<>(responses.subList(0, Math.min(3, responses.size())));
+                        Collections.shuffle(selectedResponses);
+
                         String medianResponse = computeMedianResponse(selectedResponses);
+                        System.out.println("Check for median response");
+                        System.out.println(medianResponse);
                         if (!medianResponse.isEmpty()) {
-                            //Check validity
-                            if(serverManager.checkValidity(medianResponse) == true){
-                                //System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse); uncomment
+                            if (serverManager.checkValidity(medianResponse)) {
                                 sourceServer.addCommand(medianResponse);
                             }
-                            else{
-                                //System.out.println(sourceServer.getName() + " can't accept median response: " + medianResponse + " as it seems adversarial"); uncomment
-                            }
-                            //System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
-                            //sourceServer.addCommand(medianResponse);
-                        } else {
-                            //System.out.println(sourceServer.getName() + " can`t accept ⊥"); uncomment
                         }
                     }
-
                 });
                 futures.add(future);
             }
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-            //adversary.unblockAllServers();
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
     }
+
+
+//    public void makeRequestsAndComputeMedian(PrintStream out) {
+//        Adversary adversary = new Adversary(serverManager);
+//        adversary.unblockAllServers(out);
+//        while (!isConsensusReached(out)) {
+//            System.out.println("Number of Rounds for Consensus: " + roundForConsensus);
+//            System.out.println(" ");
+//            out.println("Number of Rounds for Consensus: " + roundForConsensus);
+//
+//            adversary.blockRandomServers(out);
+//
+//            List<CompletableFuture<Void>> futures = new ArrayList<>();
+//
+//            for (Server sourceServer : serverManager.getServers()) {
+//                if (sourceServer.isBlocked()) {
+//                    //System.out.println(sourceServer.getName() + " is blocked and cannot receive any key in this round."); uncomment
+//                    //System.out.println(sourceServer.getName() + " set to ⊥"); uncomment
+//                    sourceServer.setNull();
+//                    continue;
+//                }
+//
+//                CopyOnWriteArrayList<String> responses = new CopyOnWriteArrayList<>();
+//                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+//                    for (int i = 0; i < 6; i++) {  // Send 6 requests
+//                        Server targetServer;
+//                        do {
+//                            targetServer = serverManager.getRandomServer();
+//                        } while (targetServer == sourceServer || targetServer.isBlocked());
+//
+//                        String requestData = "Request from " + sourceServer.getName();
+//                        String response = requestFromServerToServer(sourceServer, targetServer, requestData);
+//                        responses.add(response);
+//                        if (!response.isEmpty()) {
+//                            //System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": " + response); uncomment
+//                        } else {
+//                            //System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": ⊥"); uncomment
+//                        }
+//                    }
+//
+//                    // Randomly select 3 responses to compute the median
+//                    Collections.shuffle(responses);
+//                    List<String> selectedResponses = responses.subList(0, 3);
+//
+//                    if(selectedResponses.size() < 3) {
+//                        System.out.println("Not enough responses available");
+//                        sourceServer.setNull();
+//                    }
+//                    else{
+//                        String medianResponse = computeMedianResponse(selectedResponses);
+//                        if (!medianResponse.isEmpty()) {
+//                            //Check validity
+//                            if(serverManager.checkValidity(medianResponse) == true){
+//                                //System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse); uncomment
+//                                sourceServer.addCommand(medianResponse);
+//                            }
+//                            else{
+//                                //System.out.println(sourceServer.getName() + " can't accept median response: " + medianResponse + " as it seems adversarial"); uncomment
+//                            }
+//                            //System.out.println(sourceServer.getName() + " accepted median response: " + medianResponse);
+//                            //sourceServer.addCommand(medianResponse);
+//                        } else {
+//                            //System.out.println(sourceServer.getName() + " can`t accept ⊥"); uncomment
+//                        }
+//                    }
+//
+//                });
+//                futures.add(future);
+//            }
+//            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+//
+//            //adversary.unblockAllServers(out);
+//        }
+//    }
 
 
     public String requestFromServerToServer(Server sourceServer, Server targetServer, String requestData) {
@@ -191,32 +189,52 @@ public class ConsensusManager {
         }
         return cleanedList;
     }
+    public double calculateTheValueForMedian(List<String> responses) {
+        if(responses.size()>0){
+            String returnString="0.";
+            for(String response : responses){
+
+                String[] parts = response.split("_");
+                String lastPart = parts[parts.length - 1];
+                returnString += lastPart;
+            }
+            try {
+                return Double.parseDouble(returnString); // Convert the constructed string to a double
+            } catch (NumberFormatException e) {
+                System.out.println("Error in converting to double: " + returnString);
+                return 0.0; // Return 0.0 in case of conversion error
+            }
+        }
+        return 0.0;
+    }
+
     public String computeMedianResponse(List<String> responses) {
 
         String firstResponse = responses.get(0);
         String secondResponse = responses.get(1);
-        String thirdreslist = responses.get(2);
-
+        String thirdResponse = responses.get(2);
 
         List<String> firstResponseList = cleanAndSplit(firstResponse);
         List<String> secondResponseList = cleanAndSplit(secondResponse);
-        List<String> thirdResponseList = cleanAndSplit(thirdreslist);
+        List<String> thirdResponseList = cleanAndSplit(thirdResponse);
 
 
-        String combinedStringofFirstResponse = String.join("", firstResponseList);
-        double numericValueFirstresponse = Double.parseDouble("0." + combinedStringofFirstResponse);
+        Double numericValueFirstresponse = calculateTheValueForMedian(firstResponseList);
         System.out.println("Value of First Response: " + numericValueFirstresponse);
 
-
-        String combinedStringofSecondResponse = String.join("", secondResponseList);
-        double numericValueSecondResponse = Double.parseDouble("0." + combinedStringofSecondResponse);
+        Double numericValueSecondResponse = calculateTheValueForMedian(secondResponseList);
         System.out.println("Value of Second Response: " + numericValueSecondResponse);
 
-        String combinedStringofthirdResponse = String.join("", thirdResponseList);
-        double numericValueThirdResponse = Double.parseDouble("0." + combinedStringofthirdResponse);
+        Double numericValueThirdResponse = calculateTheValueForMedian(thirdResponseList);
         System.out.println("Value of Third Response: " + numericValueThirdResponse);
 
-        Set<String> medianListSubset = new LinkedHashSet<>();
+        if (numericValueFirstresponse.equals(0.0) && numericValueSecondResponse.equals(0.0) && numericValueThirdResponse.equals("0.0")) {
+            System.out.println("All responses are 0.0, skipping median calculation.");
+            return ""; // Or return a special value that indicates this condition
+        }
+
+
+            Set<String> medianListSubset = new LinkedHashSet<>();
 
         if((numericValueFirstresponse >= numericValueSecondResponse && numericValueFirstresponse <= numericValueThirdResponse) || (numericValueFirstresponse <= numericValueSecondResponse && numericValueFirstresponse >= numericValueThirdResponse)){
             medianListSubset.addAll(firstResponseList);
@@ -252,7 +270,7 @@ public class ConsensusManager {
 
         System.out.println("1st response - " + firstResponse);
         System.out.println("2nd response - " + secondResponse);
-        System.out.println("3rd response - " + thirdreslist);
+        System.out.println("3rd response - " + thirdResponse);
 
         //System.out.println("subset - " + subset);
         System.out.println("median response - " + finalMedianList);
@@ -260,156 +278,7 @@ public class ConsensusManager {
         return finalMedianList;
     }
 
-    /*public String computeMedianResponse(List<String> responses) {
 
-        String firstResponse = responses.get(0);
-        String middleResponse = responses.get(1);
-        String lastResponse = responses.get(2);
-
-        System.out.println("1st response - " + firstResponse);
-        System.out.println("2nd response - " + middleResponse);
-        System.out.println("3rd response - " + lastResponse);
-
-        Set<String> uniqueData = new HashSet<>(responses);
-        uniqueData.remove("");
-        uniqueData.remove(null);
-
-        String finalMedianList = String.join(", ", uniqueData);
-
-        System.out.println("median response - " + finalMedianList);
-
-        return finalMedianList;
-    }*/
-
-//    public boolean isConsensusReached() {
-//        Adversary adversary = new Adversary(serverManager);
-//        for (int i = 0; i < serverManager.getServers().size(); i++){
-//            if(!serverManager.getServers().get(i).isBlocked()){
-//                List<String> referenceCommand = serverManager.getServers().get(i).getCommandsStored();
-//                if(referenceCommand.isEmpty()){
-//                    System.out.println("reference: " + referenceCommand);
-//                    System.out.println(" ");
-//                    roundForConsensus++;
-//                    return false;
-//                }
-//                else{
-//                    Collections.sort(referenceCommand);
-//                    for (int j = i+1; j < serverManager.getServers().size(); j++) {
-//                        if(!serverManager.getServers().get(j).isBlocked()){
-//                            List<String> commands = serverManager.getServers().get(j).getCommandsStored();
-//                            Collections.sort(commands);
-//                            System.out.println("reference: " + referenceCommand + " from " + serverManager.getServers().get(i).getName());
-//                            System.out.println(serverManager.getServers().get(j).getName());
-//                            System.out.println("compare: " + commands + " from " + serverManager.getServers().get(j).getName());
-//                            //System.out.println("compare: " + commands);
-//                            System.out.println(commands.equals(referenceCommand));
-//                            System.out.println(" ");
-//                            if (commands.isEmpty() || !commands.equals(referenceCommand)) {
-//                                roundForConsensus++;
-//                                adversary.unblockAllServers();
-//                                serverManager.printAllStoredCommands();
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            break;
-//        }
-//        adversary.unblockAllServers();
-//        System.out.println("Consensus Reached in "+ roundForConsensus + " round");
-//        serverManager.printAllStoredCommands();
-//        return true;
-//    }
-
-
-//    public boolean isConsensusReached() {
-//        Adversary adversary = new Adversary(serverManager);
-//        List<Server> servers = serverManager.getServers();
-//        List<List<String>> commandsFromAllServers = new ArrayList<>();
-//
-//        // Prepare and collect commands from all non-blocked servers
-//        for (Server server : servers) {
-//            if (!server.isBlocked()) {
-//                List<String> storedCommands = new ArrayList<>(server.getCommandsStored());
-//                Collections.sort(storedCommands);
-//                commandsFromAllServers.add(storedCommands);
-//            }
-//        }
-//
-//        if (commandsFromAllServers.isEmpty()) {
-//            System.out.println("No active servers to check for consensus.");
-//            return false;
-//        }
-//
-//        // Check if all non-blocked servers have identical command lists
-//        List<String> referenceCommands = commandsFromAllServers.get(0);
-//        for (int i = 1; i < commandsFromAllServers.size(); i++) {
-//            System.out.println("Reference commands from first active server: " + referenceCommands);
-//            System.out.println("Comparing with commands from server " + (i+1) + ": " + commandsFromAllServers.get(i));
-//
-//            if (!commandsFromAllServers.get(i).equals(referenceCommands)) {
-//                System.out.println("Consensus not reached. Discrepancy found between server 1 and server " + (i+1) + ".");
-//                roundForConsensus++;
-//                adversary.unblockAllServers();
-//                serverManager.printAllStoredCommands();
-//                return false;
-//            }
-//        }
-//
-//        // If all lists are identical
-//        adversary.unblockAllServers();
-//        System.out.println("Consensus Reached in " + roundForConsensus + " rounds");
-//        serverManager.printAllStoredCommands();
-//        return true;
-//    }
-
-
-    /*public boolean isConsensusReached() { //uncomment
-        Adversary adversary = new Adversary(serverManager);
-        List<Server> servers = serverManager.getServers();
-        List<List<String>> commandsFromAllServers = new ArrayList<>();
-
-        // Prepare and collect commands from all non-blocked servers
-        for (Server server : servers) {
-            if (!server.isBlocked()) {
-                List<String> storedCommands = new ArrayList<>(server.getCommandsStored());
-                if (storedCommands.isEmpty()) {
-                    System.out.println(server.getName() + " has no commands stored.");
-                    adversary.unblockAllServers();
-                    roundForConsensus++;
-                    //incrementRound();
-                    return false; // Return false immediately if any server has an empty command list
-                }
-                Collections.sort(storedCommands);
-                commandsFromAllServers.add(storedCommands);
-            }
-        }
-
-        if (commandsFromAllServers.isEmpty()) {
-            System.out.println("No active servers to check for consensus.");
-            return false;
-        }
-
-        // Check if all non-blocked servers have identical command lists
-        List<String> referenceCommands = commandsFromAllServers.get(0);
-        for (List<String> commands : commandsFromAllServers) {
-            if (!commands.equals(referenceCommands)) {
-                System.out.println("Consensus not reached. Discrepancy found between servers.");
-                adversary.unblockAllServers();
-                roundForConsensus++;
-                //incrementRound();
-                serverManager.printAllStoredCommands();
-                return false;
-            }
-        }
-
-        // If all lists are identical and non-empty
-        adversary.unblockAllServers();
-        System.out.println("Consensus Reached in " + roundForConsensus + " rounds");
-        serverManager.printAllStoredCommands();
-        return true;
-    }*/
 
     public boolean isConsensusReached(PrintStream out) {
         Adversary adversary = new Adversary(serverManager);
@@ -422,39 +291,127 @@ public class ConsensusManager {
                 List<String> storedCommands = new ArrayList<>(server.getCommandsStored());
                 if (storedCommands.isEmpty()) {
                     out.println(server.getName() + " has no commands stored.");
-                    adversary.unblockAllServers();
+                    //adversary.unblockAllServers(out);
                     roundForConsensus++;
+                    if(roundForConsensus>4){checkCommitted();}
                     //incrementRound();
                     return false; // Return false immediately if any server has an empty command list
                 }
-                Collections.sort(storedCommands);
+//                Collections.sort(storedCommands);
                 commandsFromAllServers.add(storedCommands);
             }
         }
 
         if (commandsFromAllServers.isEmpty()) {
             out.println("No active servers to check for consensus.");
+            roundForConsensus++;
             return false;
         }
+        else{
+            List<String> referenceCommands = commandsFromAllServers.get(0);
 
-        // Check if all non-blocked servers have identical command lists
-        List<String> referenceCommands = commandsFromAllServers.get(0);
-        for (List<String> commands : commandsFromAllServers) {
-            if (!commands.equals(referenceCommands)) {
-                out.println("Consensus not reached. Discrepancy found between servers.");
-                adversary.unblockAllServers();
+            for (List<String> commands : commandsFromAllServers) {
+                if (!areCommandsPositionWiseEqual(referenceCommands, commands)) {
+                    out.println("Consensus not reached. Discrepancy found between servers.");
+                    String currentCSVFilename = Controller.getDirectoryPath().resolve(roundForConsensus+".csv").toString();
+                    System.out.println(currentCSVFilename);
+                    serverManager.storedInCSVFile(currentCSVFilename);
+                    serverManager.printAllStoredCommands(out);
+                    roundForConsensus++;
+                    if(roundForConsensus>4){checkCommitted();}
+                    return false;
+                }
+            }
+
+            System.out.println("Current command"+ClientManager.totalCommandsSent);
+            if(controller.getTotalCommands()!= ClientManager.totalCommandsSent){
+                System.out.println("Consensus Reached but Client command still pending");
+                out.println("Consensus Reached but Client command still pending");
+                String currentCSVFilename = Controller.getDirectoryPath().resolve(roundForConsensus+".csv").toString();
+                System.out.println(currentCSVFilename);
+                serverManager.storedInCSVFile(currentCSVFilename);
                 roundForConsensus++;
-                //incrementRound();
-                serverManager.printAllStoredCommands(out);
+                if(roundForConsensus>4){checkCommitted();}
+
                 return false;
             }
+            else{
+                // If all lists are identical
+                adversary.unblockAllServers(out);
+                out.println("Consensus Reached in " + roundForConsensus + " rounds");
+                System.out.println();
+                concensusComplete= true;
+                String currentCSVFilename = Controller.getDirectoryPath().resolve(roundForConsensus+".csv").toString();
+                System.out.println(currentCSVFilename);
+                serverManager.storedInCSVFile(currentCSVFilename);
+                serverManager.printAllStoredCommands(out);
+                return true;
+            }
+        }
+    }
+
+    public void checkCommitted() {
+        System.out.println("Checking if commands are committed based on their rounds...");
+
+        int currentConsensusRound = getRoundForConsensus();
+        List<Server> servers = serverManager.getServers();
+
+        for (Server server : servers) {
+            List<String> commands = new ArrayList<>(server.getCommandsStored());
+            List<String> filteredCommands = new ArrayList<>();
+
+            for (int i = 0; i < commands.size(); i++) {
+                String command = commands.get(i);
+                // Extract the round number from the command
+                String[] parts = command.split("_");
+                if (parts.length <= 1) {
+                    // Log warning or skip processing if the command is not in the expected format
+                    System.out.println("Skipping command due to unexpected format: " + command);
+                    continue;
+                }
+                String secondPart= parts[1];
+
+                String lastChar = String.valueOf(secondPart.charAt(secondPart.length() - 1));
+                int commandRound = Integer.parseInt(lastChar);
+                if(currentConsensusRound-commandRound>13){
+
+                    if(commands.size()-i>3){
+                        System.out.println("##############");
+                        System.out.println("The command is injected in " + commandRound + " round");
+                        System.out.println("Current Consensus Round " + currentConsensusRound);
+                        System.out.println(commands);
+                        System.out.println(command);
+                        System.out.println("Total commands in the server " + commands.size());
+                        commands.subList(0, i + 1).clear();
+                        String remainingCommandsAsString = String.join(",", commands);
+                        System.out.println(remainingCommandsAsString);
+                        server.addCommand(remainingCommandsAsString);
+                        System.out.println(server.getCommandsStored());
+                    }
+
+                }
+
+            }
+
+        }
+    }
+
+
+
+    private boolean areCommandsPositionWiseEqual(List<String> list1, List<String> list2) {
+        if (list1.size() != list2.size()) {
+            return false; // If the lengths are different, they are not identical
         }
 
-        // If all lists are identical
-        adversary.unblockAllServers();
-        out.println("Consensus Reached in " + roundForConsensus + " rounds");
-        serverManager.printAllStoredCommands(out);
-        return true;
+        for (int i = 0; i < list1.size(); i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return false; // If any position differs, consensus is not reached
+            }
+        }
+        System.out.println("It is true");
+        System.out.println(list1);
+        System.out.println(list2);
+        return true; // All positions match
     }
 
 

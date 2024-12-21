@@ -35,6 +35,11 @@ public class Controller {
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import java.nio.file.Files;
 
 public class Controller {
 
@@ -42,11 +47,39 @@ public class Controller {
     private ClientManager clientManager;
     private ConsensusManager consensusManager;
     public volatile boolean clientsActive = true;
+    int numClients = 4;
+    int numCommandsPerClient = 50;
+    private static final Path directoryPath;
+    static {
+        // Format the current time as a string for the directory name
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String dirName = LocalDateTime.now().format(dtf);
+
+        // Initialize the directory path
+        directoryPath = Paths.get("Calculate_Tau/"+dirName);
+
+        // Create the directory
+        try {
+            Files.createDirectories(directoryPath);
+            System.out.println("Directory created: " + directoryPath.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Failed to create directory: " + e.getMessage());
+            throw new RuntimeException("Failed to initialize application directory", e);
+        }
+    }
+
+    public static Path getDirectoryPath() {
+        return directoryPath;
+    }
+
+    public int getTotalCommands(){
+        return numClients*numCommandsPerClient;
+    }
 
     public void startApplication(PrintStream out) throws InterruptedException, IOException {
-        int numServers = 10;
-        int numClients = 1;
-        int numCommandsPerClient = 100;
+        int numServers = 15;
+
+
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
@@ -86,6 +119,7 @@ public class Controller {
                     break;
                 } catch (Exception e) {
                     System.err.println("Error in ConsensusManager: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
 
@@ -121,9 +155,9 @@ public class Controller {
         Thread.sleep(2000);  // Consider the necessity and implications of this sleep
 
         // Print commands after all clients and consensus operations have completed
-        serverManager.printAllStoredCommands(out);
+//        serverManager.printAllStoredCommands(out);
 
-        System.out.println("Consensus Reached in " + consensusManager.roundForConsensus + " rounds");
+        System.out.println("Consensus Reached in " + consensusManager.getRoundForConsensus() + " rounds");
 
         serverManager.stopAllServers();
 
