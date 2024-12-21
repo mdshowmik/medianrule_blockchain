@@ -7,7 +7,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ConsensusManager {
     private ServerManager serverManager;
     private Controller controller;
-    //private AtomicInteger roundForConsensus = new AtomicInteger(0);
     public int roundForConsensus = 0;
     public static boolean concensusComplete = false;
 
