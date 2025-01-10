@@ -47,8 +47,8 @@ public class Controller {
     private ClientManager clientManager;
     private ConsensusManager consensusManager;
     public volatile boolean clientsActive = true;
-    int numClients = 4;
-    int numCommandsPerClient = 50;
+    int numClients = 1;
+    int numCommandsPerClient = 1000;
     private static final Path directoryPath;
     static {
         // Format the current time as a string for the directory name
