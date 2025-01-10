@@ -45,7 +45,7 @@ public class Controller {
     public void startApplication() throws InterruptedException, IOException {
         int numServers = 40;
         int numClients = 1;
-        int numCommandsPerClient = 50;
+        int numCommandsPerClient = 200;
         int port = 5000;
 
 
