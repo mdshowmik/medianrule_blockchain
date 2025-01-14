@@ -293,7 +293,7 @@ public class ConsensusManager {
                     out.println(server.getName() + " has no commands stored.");
                     //adversary.unblockAllServers(out);
                     roundForConsensus++;
-                    if(roundForConsensus>4){checkCommitted();}
+                    //if(roundForConsensus>4){checkCommitted();}
                     //incrementRound();
                     return false; // Return false immediately if any server has an empty command list
                 }
@@ -318,7 +318,7 @@ public class ConsensusManager {
                     serverManager.storedInCSVFile(currentCSVFilename);
                     serverManager.printAllStoredCommands(out);
                     roundForConsensus++;
-                    if(roundForConsensus>4){checkCommitted();}
+                    //if(roundForConsensus>4){checkCommitted();}
                     return false;
                 }
             }
@@ -331,7 +331,7 @@ public class ConsensusManager {
                 System.out.println(currentCSVFilename);
                 serverManager.storedInCSVFile(currentCSVFilename);
                 roundForConsensus++;
-                if(roundForConsensus>4){checkCommitted();}
+                //if(roundForConsensus>4){checkCommitted();}
 
                 return false;
             }
