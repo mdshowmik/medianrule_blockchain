@@ -13,6 +13,10 @@ public class ConsensusManager {
     private ServerManager serverManager;
     int roundForConsensus = 0;
 
+    private long startTime;
+    private long endTime;
+    int totalRequest = 0;
+
     public ConsensusManager(ServerManager serverManager) {
         this.serverManager = serverManager;
     }
@@ -96,6 +100,7 @@ public class ConsensusManager {
                 }
 
                 CopyOnWriteArrayList<String> responses = new CopyOnWriteArrayList<>();
+                startTime = System.nanoTime(); // Start time tracking
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     for (int i = 0; i < 6; i++) {  // Send 6 requests
                         Server targetServer;
@@ -111,6 +116,7 @@ public class ConsensusManager {
                         } else {
                             System.out.println(sourceServer.getName() + " received response from " + targetServer.getName() + ": ⊥");
                         }
+                        totalRequest++;
                     }
 
                     // Randomly select 3 responses to compute the median
@@ -142,9 +148,20 @@ public class ConsensusManager {
                 });
                 futures.add(future);
             }
+            endTime = System.nanoTime();
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
         //adversary.unblockAllServers();
+    }
+
+    public double getThroughput() {
+        long elapsedTime = endTime - startTime; // in nanoseconds
+        double seconds = elapsedTime / 1_000_000_000.0;
+        double throughPut = totalRequest / seconds;
+        System.out.println("Total number of request: " + totalRequest);
+        System.out.println("Throughput of this system is: " + throughPut);
+
+        return throughPut; // commands per second
     }
 
 
