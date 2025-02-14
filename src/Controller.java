@@ -77,7 +77,7 @@ public class Controller {
     }
 
     public void startApplication(PrintStream out) throws InterruptedException, IOException {
-        int numServers = 80;
+        int numServers = 50;
         int port = 5000;
 
         serverManager = new ServerManager(numServers, port);
@@ -156,6 +156,8 @@ public class Controller {
 //        serverManager.printAllStoredCommands(out);
 
         System.out.println("Consensus Reached in " + consensusManager.getRoundForConsensus() + " rounds");
+
+        consensusManager.getThroughput();
 
         serverManager.stopAllServers();
 

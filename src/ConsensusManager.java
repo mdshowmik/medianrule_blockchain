@@ -10,6 +10,9 @@ public class ConsensusManager {
     //private AtomicInteger roundForConsensus = new AtomicInteger(0);
     public int roundForConsensus = 0;
     public static boolean concensusComplete = false;
+    private long startTime;
+    private long endTime;
+    int totalRequest = 0;
 
 
     public ConsensusManager(ServerManager serverManager, Controller controller) {
@@ -42,6 +45,7 @@ public class ConsensusManager {
 
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     CopyOnWriteArrayList<String> responses = new CopyOnWriteArrayList<>();
+                    startTime = System.nanoTime(); // Start time tracking
                     for (int i = 0; i < 6; i++) {  // Send 6 requests
                         Server targetServer;
                         do {
@@ -73,13 +77,25 @@ public class ConsensusManager {
                             }
                         }
                     }
+                    totalRequest++;
                 });
                 futures.add(future);
             }
-
+            endTime = System.nanoTime();
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
     }
+
+    public double getThroughput() {
+        long elapsedTime = endTime - startTime; // in nanoseconds
+        double seconds = elapsedTime / 1_000_000_000.0;
+        double throughPut = totalRequest / seconds;
+        System.out.println("Total number of request: " + totalRequest);
+        System.out.println("Throughput of this system is: " + throughPut);
+
+        return throughPut; // commands per second
+    }
+
 
 
 //    public void makeRequestsAndComputeMedian(PrintStream out) {
