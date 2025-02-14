@@ -47,8 +47,8 @@ public class Controller {
     private ClientManager clientManager;
     private ConsensusManager consensusManager;
     public volatile boolean clientsActive = true;
-    int numClients = 1;
-    int numCommandsPerClient = 1000;
+    int numClients = 5;
+    int numCommandsPerClient = 80;
     private static final Path directoryPath;
     static {
         // Format the current time as a string for the directory name
@@ -77,7 +77,7 @@ public class Controller {
     }
 
     public void startApplication(PrintStream out) throws InterruptedException, IOException {
-        int numServers = 15;
+        int numServers = 50;
 
 
         int port = 5000;
